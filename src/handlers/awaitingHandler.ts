@@ -17,7 +17,11 @@ export async function awaitingHandler(data: UserMsg, state: string, env: any) {
     switch (state) {
 
       case rStates.waitPremPass:
-        const response = await axios.post(env.PASS_CHECKER_URL, { pass: data.text });
+        const response = await axios.post(env.PASS_CHECKER_URL, { pass: data.text }, {
+          headers: {
+              'Content-Type': 'application/json'
+          }
+        })
         const res = response.data
         console.log('pass checker result: '+JSON.stringify(response))
         if (res.error) {
