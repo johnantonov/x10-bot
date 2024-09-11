@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --exec ts-node src/bot.ts",
+    "start": "ts-node src/bot.ts",
     "report": "ts-node src/services/reportService.ts",
     "build": "tsc"
   },
