@@ -19,7 +19,7 @@ export async function awaitingHandler(data: UserMsg, state: string, env: any) {
       case rStates.waitPremPass:
         const response = await axios.post(env.PASS_CHECKER_URL, { pass: data.text });
         const res = response.data
-        console.log('pass checker result: '+JSON.stringify(res))
+        console.log('pass checker result: '+JSON.stringify(response))
         if (res.error) {
           return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
         } else if (res.status === false) {
