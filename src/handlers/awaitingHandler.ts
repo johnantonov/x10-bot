@@ -23,7 +23,7 @@ export async function awaitingHandler(data: UserMsg, state: string, env: any) {
           }
         })
         const res = response.data
-        console.log('pass checker result: '+JSON.stringify(response))
+        console.log('pass checker result: '+JSON.stringify(res))
         if (res.error) {
           return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
         } else if (res.status === false) {
