@@ -66,6 +66,7 @@ services:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASS}
       - POSTGRES_DB=${PGNAME}
+      - PGPASSWORD=${PGPASS} 
     command: sh -c "psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/database/migrations/V1_0__create_first_table.sql"
     depends_on:
       - postgres
