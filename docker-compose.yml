@@ -71,7 +71,7 @@ services:
       - PGPORT=5432
     entrypoint: >
       sh -c "
-      psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/migrations/your_migration_file.sql
+      psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/database/migrations/V1_0__create_first_table.sql
       "
     depends_on:
       - postgres
