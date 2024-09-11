@@ -57,6 +57,26 @@ services:
       - postgres
     restart: always
 
+  migrate:
+    image: postgres:15-alpine
+    container_name: migration
+    working_dir: /usr/src/migrations
+    volumes:
+      - ./migrations:/usr/src/migrations
+    environment:
+      - PGHOST=postgres
+      - PGUSER=${PGUSER}
+      - PGDATABASE=${PGNAME}
+      - PGPASSWORD=${PGPASS}
+      - PGPORT=5432
+    entrypoint: >
+      sh -c "
+      psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/migrations/your_migration_file.sql
+      "
+    depends_on:
+      - postgres
+    restart: "no"
+  
 volumes:
   redis_data:
   postgres_data:
