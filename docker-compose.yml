@@ -57,25 +57,19 @@ services:
       - postgres
     restart: always
 
-  migrate:
-    image: postgres:15-alpine
-    container_name: migration
-    working_dir: /usr/src/migrations
-    volumes:
-      - ./migrations:/usr/src/migrations
-    environment:
-      - PGHOST=postgres
-      - PGUSER=${PGUSER}
-      - PGDATABASE=${PGNAME}
-      - PGPASSWORD=${PGPASS}
-      - PGPORT=5432
-    entrypoint: >
-      sh -c "
-      psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/database/migrations/V1_0__create_first_table.sql
-      "
-    depends_on:
-      - postgres
-    restart: "no"
+  migration:
+  image: postgres:15-alpine
+  container_name: migration
+  volumes:
+    - ./database/migrations:/usr/src/database/migrations  
+  environment:
+    - POSTGRES_USER=${PGUSER}
+    - POSTGRES_PASSWORD=${PGPASS}
+    - POSTGRES_DB=${PGNAME}
+  command: sh -c "psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/database/migrations/V1_0__create_first_table.sql"
+  depends_on:
+    - postgres
+  restart: on-failure
   
 volumes:
   redis_data:
