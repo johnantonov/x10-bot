@@ -137,7 +137,7 @@ export class ReportService {
 Выкупы ${data[0].buyoutsCount} шт на ${data[0].buyoutsSumRub} руб
 Рекламный бюджет ${articleData?.marketing_cost ?? 0}
 <b>Прибыль: ${rev}</b>`;
-              this.sendMessage(user.chat_id, `<b>Отчет за ${date}: ${name}</b>\n\n${message}`)
+              this.sendMessage(user.chat_id, `<b>Отчет за ${date}: ${name}</b>\n${message}`)
             } else if (!report && articleData) {
               this.sendMessage(user.chat_id, `К сожалению, нам не удалось получить отчета за ${date} по ${articleData?.name} ${user.article}`)
             } else {

@@ -30,7 +30,11 @@ function awaitingHandler(data, state, env) {
         try {
             switch (state) {
                 case redis_1.rStates.waitPremPass:
-                    const response = yield axios_1.default.post(env.PASS_CHECKER_URL, { pass: data.text });
+                    const response = yield axios_1.default.post(env.PASS_CHECKER_URL, { pass: data.text }, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
                     const res = response.data;
                     console.log('pass checker result: ' + JSON.stringify(res));
                     if (res.error) {
