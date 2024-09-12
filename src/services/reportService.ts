@@ -122,16 +122,16 @@ export class ReportService {
             console.log(report)
             const articleData = await user_articles_db.selectArticle(user.article)
 
-            if (report && articleData) {
+            if (report) {
               console.log(report.data[0].history)
               const data = report.data[0].history
               console.log(data)
-              const name = articleData.name ? articleData?.name : user.article
+              const name = articleData?.name ? articleData?.name : user.article
               let selfCost = 0
-              if (articleData.self_cost) {
+              if (articleData?.self_cost) {
                 selfCost = data[0].buyoutsCount * articleData.self_cost
               }
-              const rev = data[0].buyoutsSumRub - selfCost - articleData.marketing_cost
+              const rev = data[0].buyoutsSumRub - selfCost - (articleData?.marketing_cost ?? 0)
               let message = `
 Заказы ${data[0].ordersCount} шт на ${data[0].ordersSumRub} руб
 Выкупы ${data[0].buyoutsCount} шт на ${data[0].buyoutsSumRub} руб
