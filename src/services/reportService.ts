@@ -125,6 +125,7 @@ export class ReportService {
             if (report && articleData) {
               console.log(report.data[0].history)
               const data = report.data[0].history
+              console.log(data)
               const name = articleData.name ? articleData?.name : user.article
               let selfCost = 0
               if (articleData.self_cost) {
