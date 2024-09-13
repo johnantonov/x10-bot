@@ -40,22 +40,6 @@ export class ReportService {
   async fetchWbStatistics(data: [{ article: number, key: string }], startDate: string, endDate: string) {
     console.log(data)
     const url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history';
-// 220177186
-// 220197677
-// 220197678
-// 226261465
-// 226261548
-// 226261467
-// 226261466
-// 226261464
-// 169935551
-// 197620771
-// 197620772
-// 208988521
-// 94215475
-// 208989627
-// 210222532
-// 244951686
 
     const requestData = {
       nmIDs: [+data[0].article],
@@ -169,7 +153,7 @@ function formatReportMessage(data: string[]): string {
 
   data.forEach((row, i) => {
     if (i === 0) {
-      message += `<b>${row[0]}</b>\n\n`;
+      message += `<b>${row[0]}</b>\n`;
     } else if (row[0].startsWith('ТОП')) {
       message += `\n<b>${row[0]}</b>\n`;
     } else if (row[0].startsWith('Товар')) {
