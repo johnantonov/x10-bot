@@ -13,6 +13,7 @@ export function handleAdminCommand(chatId: number, command: string, bot: Telegra
       return console.log(`Сhat id ${chatId} does not have access.`)
     }
     const action = command.split('__')[1]
+    console.log(action)
 
     if (action === 'run_report_service') {
       console.log('admin started report serivce')
