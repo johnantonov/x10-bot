@@ -85,6 +85,8 @@ export class ReportService {
           }
         });
 
+        console.log(advertDetailsResponse)
+
         const result = processCampaigns(advertDetailsResponse.data, article)
         console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(result));
       }
