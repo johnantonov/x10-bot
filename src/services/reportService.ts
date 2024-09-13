@@ -39,7 +39,12 @@ export class ReportService {
 
       for (const user of users) {
         const wbKey = user.wb_api_key;
-        console.log(wbKey)
+        const article = user.article
+
+        if (!wbKey || !article) {
+          console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+          continue;
+        }
 
         const campaignResponse = await axios.get('https://advert-api.wildberries.ru/adv/v1/promotion/count', {
           headers: {
@@ -80,7 +85,8 @@ export class ReportService {
           }
         });
 
-        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(advertDetailsResponse.data));
+        const result = processCampaigns(advertDetailsResponse.data, article)
+        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(result));
       }
 
     } catch (error) {
@@ -214,31 +220,13 @@ export class ReportService {
   }
 }
 
-function formatReportMessage(data: string[]): string {
-  let message = '';
-
-  data.forEach((row, i) => {
-    if (i === 0) {
-      message += `<b>${row[0]}</b>\n`;
-    } else if (row[0].startsWith('ТОП')) {
-      message += `\n<b>${row[0]}</b>\n`;
-    } else if (row[0].startsWith('Товар')) {
-      message += `${row[0]} ${row[1]}\n`;
-    } else {
-      message += `<b>${row[0]}</b> ${row[1]}\n`;
-    }
-  });
-
-  return message.trim();
-}
-
-
-
 
 import pool from '../../database/db';
 import { User, user_type } from '../dto/user';
 import { getYesterdayDate } from '../utils/dates';
 import { user_articles_db } from '../../database/models/user_articles';
+import { formatReportMessage } from '../utils/text';
+import { processCampaigns } from '../helpers/marketing';
 
 const reportService = new ReportService(pool);
 reportService.startCronJob();
