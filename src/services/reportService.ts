@@ -48,26 +48,26 @@ export class ReportService {
           }
         });
 
-        console.log(campaignResponse)
+        const campaigns = campaignResponse.data.adverts || [];
+        const now = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
 
-        // const campaigns = campaignResponse.data.adverts || [];
-        // const now = new Date();
-        // const thirtyDaysAgo = new Date();
-        // thirtyDaysAgo.setDate(now.getDate() - 30);
+        const recentCampaigns = campaigns.flatMap((campaign: any) => 
+          campaign.advert_list.filter((advert: any) => {
+            const changeTime = new Date(advert.changeTime);
+            return changeTime >= thirtyDaysAgo && changeTime <= now;
+          })
+        );
 
-        // const recentCampaigns = campaigns.flatMap((campaign: any) => 
-        //   campaign.advert_list.filter((advert: any) => {
-        //     const changeTime = new Date(advert.changeTime);
-        //     return changeTime >= thirtyDaysAgo && changeTime <= now;
-        //   })
-        // );
-
-        // const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
+        const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
         
-        // if (advertIds.length === 0) {
-        //   console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
-        //   continue;
-        // }
+        if (advertIds.length === 0) {
+          console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+          continue;
+        }
+
+        console.log(advertIds)
 
         // const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
         //   headers: {
