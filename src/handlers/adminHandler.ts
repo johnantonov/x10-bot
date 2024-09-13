@@ -53,7 +53,7 @@ export function handleAdminCommand(chatId: number, command: string, bot: Telegra
     if (action.startsWith('get_marketing_costs')) {
       console.log('admin started report serivce for marketing info')
       const RS = new ReportService(pool);
-      RS.run()
+      RS.fetchAdvertisementData()
     }
     
   } catch (e) {
