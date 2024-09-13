@@ -80,7 +80,7 @@ export class ReportService {
           }
         });
 
-        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
+        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(advertDetailsResponse.data));
       }
 
     } catch (error) {
