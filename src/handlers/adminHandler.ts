@@ -5,7 +5,15 @@ import pool from "../../database/db"
 
 dotenv.config();
 
-export function handleAdminCommand(chatId: number, command: string, bot: TelegramBot) {
+const helpInfo = `
+/admin__run_report_service - запуск репорт сервиса на прошедший час
+/admin__clean_db_{tableName} - очистить таблицу в базе данных
+/admin__delete_user_{id} - удалить пользователя из таблицы users
+/admin__get_marketing_costs - запуск сбора рекламных расходов
+/admin__run_report_service - запуск репорт сервиса на прошедший час
+`
+
+export async function handleAdminCommand(chatId: number, command: string, bot: TelegramBot) {
   try {
     const adminChatId = process.env.ADMIN_CHAT
     if (!adminChatId || chatId !== +adminChatId) {
@@ -51,6 +59,13 @@ export function handleAdminCommand(chatId: number, command: string, bot: Telegra
     }
 
     if (action.startsWith('get_marketing_costs')) {
+      console.log('admin started report serivce for marketing info')
+      const RS = new ReportService(pool);
+      RS.fetchAdvertisementData()
+    }
+
+    if (action.startsWith('help')) {
+      await bot.sendMessage(chatId, helpInfo)
       console.log('admin started report serivce for marketing info')
       const RS = new ReportService(pool);
       RS.fetchAdvertisementData()

@@ -78,7 +78,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   };
 
   if (text.startsWith('/admin__')) {
-    return handleAdminCommand(chatId, text, bot)
+    await handleAdminCommand(chatId, text, bot)
   }
   
   if (['/start', '/menu'].includes(text)) {

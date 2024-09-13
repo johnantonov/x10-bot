@@ -39,6 +39,7 @@ export class ReportService {
 
       for (const user of users) {
         const wbKey = user.wb_api_key;
+        console.log(wbKey)
 
         const campaignResponse = await axios.get('https://advert-api.wildberries.ru/adv/v1/promotion/count', {
           headers: {
@@ -69,7 +70,7 @@ export class ReportService {
         const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
           headers: {
             'Authorization': wbKey,
-            'Content-Type': 'application/json'
+            // 'Content-Type': 'application/json'
           }
         });
 
@@ -98,7 +99,6 @@ export class ReportService {
   }
 
   async fetchWbStatistics(data: [{ article: number, key: string }], startDate: string, endDate: string) {
-    console.log(data)
     const url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history';
 
     const requestData = {
