@@ -133,7 +133,7 @@ class ReportService {
     }
     run() {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b;
             try {
                 const currentHour = new Date().getHours() + 3;
                 const oldUsers = yield this.getUsersForReport(currentHour, 'old_ss');
@@ -158,22 +158,22 @@ class ReportService {
                             const report = yield this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key }], date, date);
                             console.log(report);
                             const articleData = yield user_articles_1.user_articles_db.selectArticle(user.article);
-                            if (report && articleData) {
+                            if (report) {
                                 console.log(report.data[0].history);
                                 const data = report.data[0].history;
                                 console.log(data);
-                                const name = articleData.name ? articleData === null || articleData === void 0 ? void 0 : articleData.name : user.article;
+                                const name = (articleData === null || articleData === void 0 ? void 0 : articleData.name) ? articleData === null || articleData === void 0 ? void 0 : articleData.name : user.article;
                                 let selfCost = 0;
-                                if (articleData.self_cost) {
+                                if (articleData === null || articleData === void 0 ? void 0 : articleData.self_cost) {
                                     selfCost = data[0].buyoutsCount * articleData.self_cost;
                                 }
-                                const rev = data[0].buyoutsSumRub - selfCost - articleData.marketing_cost;
+                                const rev = data[0].buyoutsSumRub - selfCost - ((_a = articleData === null || articleData === void 0 ? void 0 : articleData.marketing_cost) !== null && _a !== void 0 ? _a : 0);
                                 let message = `
 Заказы ${data[0].ordersCount} шт на ${data[0].ordersSumRub} руб
 Выкупы ${data[0].buyoutsCount} шт на ${data[0].buyoutsSumRub} руб
-Рекламный бюджет ${(_a = articleData === null || articleData === void 0 ? void 0 : articleData.marketing_cost) !== null && _a !== void 0 ? _a : 0}
+Рекламный бюджет ${(_b = articleData === null || articleData === void 0 ? void 0 : articleData.marketing_cost) !== null && _b !== void 0 ? _b : 0}
 <b>Прибыль: ${rev}</b>`;
-                                this.sendMessage(user.chat_id, `<b>Отчет за ${date}: ${name}</b>\n\n${message}`);
+                                this.sendMessage(user.chat_id, `<b>Отчет за ${date}: ${name}</b>\n${message}`);
                             }
                             else if (!report && articleData) {
                                 this.sendMessage(user.chat_id, `К сожалению, нам не удалось получить отчета за ${date} по ${articleData === null || articleData === void 0 ? void 0 : articleData.name} ${user.article}`);
