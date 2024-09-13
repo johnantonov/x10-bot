@@ -49,6 +49,12 @@ export class ReportService {
         });
 
         const campaigns = campaignResponse.data.adverts || [];
+
+        if (campaigns.length === 0) {
+          console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+          continue;
+        }
+
         const now = new Date();
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -67,16 +73,14 @@ export class ReportService {
           continue;
         }
 
-        console.log(advertIds)
+        const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v2/fullstats', advertIds, {
+          headers: {
+            'Authorization': wbKey,
+            'Content-Type': 'application/json'
+          }
+        });
 
-        // const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
-        //   headers: {
-        //     'Authorization': wbKey,
-        //     'Content-Type': 'application/json'
-        //   }
-        // });
-
-        // console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
+        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
       }
 
     } catch (error) {
