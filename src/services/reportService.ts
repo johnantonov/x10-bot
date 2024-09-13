@@ -13,12 +13,72 @@ export class ReportService {
 
   // Fetch users with type and matching notification_time
   async getUsersForReport(hour: number, type: user_type): Promise<User[]> {
-    const query = `
-      SELECT * FROM users 
-      WHERE type = $2 AND notification_time = $1
-    `;
-    const result = await this.pool.query(query, [hour, type]);
+    let query = '';
+    let params: (number | user_type)[] = [type];
+
+    if (hour > 0) {
+      query = `SELECT * FROM users WHERE type = $2 AND notification_time = $1`;
+      params = [hour, type]; // оба параметра используются
+    } else {
+      query = `SELECT * FROM users WHERE type = $1`;
+    }
+
+    const result = await this.pool.query(query, params);
     return result.rows;
+  }
+
+  // Get marketing info
+  async fetchAdvertisementData(): Promise<void> {
+    try {
+      const users = await this.getUsersForReport(0, 'new_art');
+      
+      if (users.length === 0) {
+        console.log('No users with type new_art to fetch advertisement data for.');
+        return;
+      }
+
+      for (const user of users) {
+        const wbKey = user.wb_api_key;
+
+        const campaignResponse = await axios.get('https://advert-api.wildberries.ru/adv/v1/promotion/count', {
+          headers: {
+            'Authorization': wbKey,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const campaigns = campaignResponse.data.adverts || [];
+        const now = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(now.getDate() - 30);
+
+        const recentCampaigns = campaigns.flatMap((campaign: any) => 
+          campaign.advert_list.filter((advert: any) => {
+            const changeTime = new Date(advert.changeTime);
+            return changeTime >= thirtyDaysAgo && changeTime <= now;
+          })
+        );
+
+        const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
+        
+        if (advertIds.length === 0) {
+          console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+          continue;
+        }
+
+        const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
+          headers: {
+            'Authorization': wbKey,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
+      }
+
+    } catch (error) {
+      console.error('Error fetching advertisement data:', error);
+    }
   }
 
   // Send message to user
