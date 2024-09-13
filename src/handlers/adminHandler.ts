@@ -2,7 +2,6 @@ import TelegramBot from "node-telegram-bot-api"
 import { ReportService } from "../services/reportService"
 import * as dotenv from 'dotenv';
 import pool from "../../database/db"
-import { convertTypeAcquisitionFromJson } from "typescript";
 
 dotenv.config();
 

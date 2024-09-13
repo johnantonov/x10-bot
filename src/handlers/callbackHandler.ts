@@ -64,7 +64,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
 //*********************** SHEETS OLD ***********************//
-  if (cb === cbs.setOldUserType) {
+  if (cb === cbs.setOldUserType || cb === cbs.goPrem) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     const answer = await bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', new Options([[buttons.menu]]));
     msgs.push({chatId, messageId: answer.message_id, direction: 'outgoing', content: 'await_pass'})
