@@ -48,33 +48,35 @@ export class ReportService {
           }
         });
 
-        const campaigns = campaignResponse.data.adverts || [];
-        const now = new Date();
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(now.getDate() - 30);
+        console.log(campaignResponse)
 
-        const recentCampaigns = campaigns.flatMap((campaign: any) => 
-          campaign.advert_list.filter((advert: any) => {
-            const changeTime = new Date(advert.changeTime);
-            return changeTime >= thirtyDaysAgo && changeTime <= now;
-          })
-        );
+        // const campaigns = campaignResponse.data.adverts || [];
+        // const now = new Date();
+        // const thirtyDaysAgo = new Date();
+        // thirtyDaysAgo.setDate(now.getDate() - 30);
 
-        const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
+        // const recentCampaigns = campaigns.flatMap((campaign: any) => 
+        //   campaign.advert_list.filter((advert: any) => {
+        //     const changeTime = new Date(advert.changeTime);
+        //     return changeTime >= thirtyDaysAgo && changeTime <= now;
+        //   })
+        // );
+
+        // const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
         
-        if (advertIds.length === 0) {
-          console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
-          continue;
-        }
+        // if (advertIds.length === 0) {
+        //   console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+        //   continue;
+        // }
 
-        const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
-          headers: {
-            'Authorization': wbKey,
-            // 'Content-Type': 'application/json'
-          }
-        });
+        // const advertDetailsResponse = await axios.post('https://advert-api.wildberries.ru/adv/v1/promotion/details', advertIds, {
+        //   headers: {
+        //     'Authorization': wbKey,
+        //     'Content-Type': 'application/json'
+        //   }
+        // });
 
-        console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
+        // console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, advertDetailsResponse.data);
       }
 
     } catch (error) {
