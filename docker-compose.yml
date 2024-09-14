@@ -12,7 +12,7 @@ services:
     working_dir: /usr/src/app  
     volumes:
       - .:/usr/src/app  
-    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm ci && npm install && npm start"
+    command: sh -c "npm ci && npm start"
     environment:
       - REDIS_HOST=redis
       - PGHOST=postgres
@@ -45,7 +45,8 @@ services:
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm ci && npm install && npm run build && node dist/src/services/reportService.js"
+    command: sh -c "npm ci && npm run build && node dist/src/services/reportService.js"
+
     environment:
       - PGHOST=postgres
       - PGUSER=${PGUSER}
