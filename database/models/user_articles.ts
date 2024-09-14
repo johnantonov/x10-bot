@@ -84,9 +84,12 @@ class ArticlesModel extends BaseModel<Article> {
     try {
       const query = `SELECT marketing_cost FROM user_articles WHERE user_id = $1`;
       const result = await this.pool.query(query, [user_id]);
+
+      console.log(result)
   
       let currentMarketingCost = result.rows[0]?.marketing_cost || {};
-  
+      
+      console.log(currentMarketingCost)
       for (const [date, cost] of Object.entries(marketingCost)) {
         if (cost !== 0 || !(date in currentMarketingCost)) {
           currentMarketingCost[date] = cost;
@@ -106,6 +109,8 @@ class ArticlesModel extends BaseModel<Article> {
         SET marketing_cost = $1 
         WHERE user_id = $2
       `;
+
+      console.log(updateQuery)
       await this.pool.query(updateQuery, [updatedMarketingCost, user_id]);
     } catch (e) {
       console.error('Error updating marketing cost:', e);

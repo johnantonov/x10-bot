@@ -15,7 +15,6 @@ export function processCampaigns(advertisements : Record<string, any>, userNmId:
           const dayDate = new Date(day.date).toISOString().split('T')[0];
           if (result.hasOwnProperty(dayDate)) {
             result[dayDate] += day.sum;
-            console.log(day.sum)
           }
         });
       }
