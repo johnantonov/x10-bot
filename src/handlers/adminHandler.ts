@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api"
-import { ReportService } from "../services/reportService"
+import { ReportService, runPersonReport } from "../services/reportService"
 import * as dotenv from 'dotenv';
 import pool from "../../database/db"
 import { sortObjDatesEntries } from "../utils/dates";
@@ -72,8 +72,8 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
       try {
         const userId = action.split('report_')[1];
         if (userId) {
-          // runPersonReport(chatId)
-          await bot.sendMessage(chatId, "Функция временно недоступна")
+          runPersonReport(chatId)
+          // await bot.sendMessage(chatId, "Функция временно недоступна")
         } else {
           console.error('Error: No user specified for report service');
         }
