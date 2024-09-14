@@ -61,13 +61,13 @@ services:
     image: postgres:15-alpine
     container_name: migration
     volumes:
-      - ./database/migrations:/usr/src/database/migrations  
+      - ./database/migrations:/usr/src/database/migrations
     environment:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASS}
       - POSTGRES_DB=${PGNAME}
-      - PGPASSWORD=${PGPASS} 
-    command: sh -c "psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/database/migrations/V1_0__create_first_table.sql"
+      - PGPASSWORD=${PGPASS}
+    command: sh -c "for f in /usr/src/database/migrations/*.sql; do psql -h postgres -U ${PGUSER} -d ${PGNAME} -f $f; done"
     depends_on:
       - postgres
     restart: on-failure
