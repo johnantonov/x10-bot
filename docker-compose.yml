@@ -8,11 +8,12 @@ services:
     restart: always
 
   app:
-    image: node:18-alpine
-    working_dir: /usr/src/app  
+    build: .
+    working_dir: /usr/src/app
     volumes:
-      - .:/usr/src/app  
-    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm install && npm start"
+      - .:/usr/src/app
+      - /usr/src/app/node_modules 
+    command: npm start
     environment:
       - REDIS_HOST=redis
       - PGHOST=postgres
