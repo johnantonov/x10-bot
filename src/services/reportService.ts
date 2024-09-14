@@ -3,31 +3,31 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import cron from 'node-cron';
 import express from 'express';
-const app = express();
+// const app = express();
 const port = process.env.BASE_PORT;
 
-app.use(express.json());
+// app.use(express.json());
 dotenv.config();
 
-app.post('/runReportForUser', async (req, res) => {
-  const { chatId } = req.body;
-  try {
-    const RS = new ReportService(pool);
-    const user = await users_db.getUserById(chatId);
-    if (user) {
-      await RS.runForUser(user);
-      res.status(200).send('Report run successfully for user.');
-    } else {
-      res.status(404).send('User not found.');
-    }
-  } catch (error) {
-    res.status(500).send('Error running report for user.');
-  }
-});
+// app.post('/runReportForUser', async (req, res) => {
+//   const { chatId } = req.body;
+//   try {
+//     const RS = new ReportService(pool);
+//     const user = await users_db.getUserById(chatId);
+//     if (user) {
+//       await RS.runForUser(user);
+//       res.status(200).send('Report run successfully for user.');
+//     } else {
+//       res.status(404).send('User not found.');
+//     }
+//   } catch (error) {
+//     res.status(500).send('Error running report for user.');
+//   }
+// });
 
-app.listen(port, () => {
-  console.log(`API Server running on port ${port}`);
-});
+// app.listen(port, () => {
+//   console.log(`API Server running on port ${port}`);
+// });
 
 export function runPersonReport(chat_id: number) {
   axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
