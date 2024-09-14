@@ -152,3 +152,14 @@ export function generateReportTimeButtons(rep: string, page: number = 0): Telegr
 
   return times;
 }
+
+export async function setBotCommands(bot: TelegramBot) {
+  try {
+    await bot.setMyCommands([
+      { command: '/menu', description: 'Главное меню' }
+    ]);
+    console.log('Команды установлены.');
+  } catch (error) {
+    console.error('Ошибка при установке команд:', error);
+  }
+}

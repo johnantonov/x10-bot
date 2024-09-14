@@ -127,6 +127,16 @@ class UsersModel extends BaseModel<User> {
       console.error('postgres: error while canceling following article - '+e)
     }
   }
+
+  async getUserById(chat_id: number) {
+    const existingUser = await this.select({ chat_id });
+      
+      if (existingUser.rows.length > 0) {
+        return existingUser.rows[0];  
+      } else {
+        return null
+      }
+  }
 }
 
 export const users_db = new UsersModel(pool);

@@ -57,7 +57,7 @@ function awaitingHandler(data, state, env) {
                 case redis_1.rStates.waitArticle:
                     try {
                         yield users_1.users_db.updateArticle(data.chatId, +data.text);
-                        yield user_articles_1.user_articles_db.updateArticle(data.chatId, data.text);
+                        yield user_articles_1.user_articles_db.updateArticle(data.chatId, +data.text);
                         return new msgData_1.AwaitingAnswer({ result: true, text: "Ваш артикул добавлен. В меню вы можете внести дополнительные настройки для получения более точного отчета.", type: 'new_art' });
                     }
                     catch (e) {

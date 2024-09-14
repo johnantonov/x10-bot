@@ -45,7 +45,7 @@ services:
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm install && npm run build && node dist/src/services/reportService.js"
+    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm install && npm run build && node dist/src/services/reportService.js && node dist/src/server.js"
     environment:
       - PGHOST=postgres
       - PGUSER=${PGUSER}

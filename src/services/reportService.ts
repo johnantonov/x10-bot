@@ -2,7 +2,38 @@ import { Pool } from 'pg';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
 import cron from 'node-cron';
+import express from 'express';
+const app = express();
+const port = process.env.BASE_PORT;
+
+app.use(express.json());
 dotenv.config();
+
+app.post('/runReportForUser', async (req, res) => {
+  const { chatId } = req.body;
+  try {
+    const RS = new ReportService(pool);
+    const user = await users_db.getUserById(chatId);
+    if (user) {
+      await RS.runForUser(user);
+      res.status(200).send('Report run successfully for user.');
+    } else {
+      res.status(404).send('User not found.');
+    }
+  } catch (error) {
+    res.status(500).send('Error running report for user.');
+  }
+});
+
+app.listen(port, () => {
+  console.log(`API Server running on port ${port}`);
+});
+
+export function runPersonReport(chat_id: number) {
+  axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
+  .then(response => console.log('Report initiated: ', response.data))
+  .catch(error => console.error('Failed to initiate report: ', error));
+}
 
 export class ReportService {
   private pool: Pool;
@@ -12,6 +43,7 @@ export class ReportService {
   }
 
   // Fetch users with type and matching notification_time
+  // if hour = 0, add all users for adv data
   async getUsersForReport(hour: number, type: user_type): Promise<User[]> {
     let query = '';
     let params: (number | user_type)[] = [type];
@@ -71,7 +103,11 @@ export class ReportService {
           })
         );
 
-        const advertIds = recentCampaigns.map((advert: any) => ({ id: advert.advertId }));
+        const last30DaysDates = getXdaysAgoArr(10);
+        const advertIds = recentCampaigns.map((advert: any) => ({ 
+          id: advert.advertId, 
+          dates: last30DaysDates 
+        }));
         
         if (advertIds.length === 0) {
           console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
@@ -85,9 +121,8 @@ export class ReportService {
           }
         });
 
-        console.log(advertDetailsResponse)
-
         const result = processCampaigns(advertDetailsResponse.data, article)
+        user_articles_db.addMarketingCost(user.chat_id, result)
         console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(result));
       }
 
@@ -174,28 +209,16 @@ export class ReportService {
 
       if (newUsers.length > 0 ) {
         const date = getYesterdayDate();
+
         for (const user of newUsers) {
           if (user.wb_api_key && user.article) {
             const report = await this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key}], date, date)
-            console.log(report)
-            const articleData = await user_articles_db.selectArticle(user.article)
-
+            const articleData = await user_articles_db.selectArticle(user.chat_id)
+            
             if (report) {
-              console.log(report.data[0].history)
-              const data = report.data[0].history
-              console.log(data)
-              const name = articleData?.name ? articleData?.name : user.article
-              let selfCost = 0
-              if (articleData?.self_cost) {
-                selfCost = data[0].buyoutsCount * articleData.self_cost
-              }
-              const rev = data[0].buyoutsSumRub - selfCost - (articleData?.marketing_cost ?? 0)
-              let message = `
-Заказы ${data[0].ordersCount} шт на ${data[0].ordersSumRub} руб
-Выкупы ${data[0].buyoutsCount} шт на ${data[0].buyoutsSumRub} руб
-Рекламный бюджет ${articleData?.marketing_cost ?? 0}
-<b>Прибыль: ${rev}</b>`;
-              this.sendMessage(user.chat_id, `<b>Отчет за ${date}: ${name}</b>\n${message}`)
+              const data = report.data[0].history;
+              const message = formatReportArticleMessage(data, articleData, user, date)
+              this.sendMessage(user.chat_id, message)
             } else if (!report && articleData) {
               this.sendMessage(user.chat_id, `К сожалению, нам не удалось получить отчета за ${date} по ${articleData?.name} ${user.article}`)
             } else {
@@ -211,11 +234,42 @@ export class ReportService {
     } 
   }
 
+  async runForUser(user: User): Promise<void> {
+    try {
+      if (user.type === 'old_ss' && user.ss) {
+        const reportData = await this.getReportsFromWebApp([user.ss]);
+        if (reportData[user.ss]) {
+          const formattedMessage = formatReportMessage(reportData[user.ss]);
+          await this.sendMessage(user.chat_id, formattedMessage);
+        }
+      } else if (user.type === 'new_art' && user.article && user.wb_api_key) {
+        const date = getYesterdayDate();
+        const report = await this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key}], date, date);
+        if (report) {
+          const articleData = await user_articles_db.selectArticle(user.chat_id);
+          const data = report.data[0].history;
+          const message = formatReportArticleMessage(data, articleData, user, date);
+          await this.sendMessage(user.chat_id, message);
+        }
+      }
+    } catch (error) {
+      console.error('Error running report for user:', error);
+    }
+  }
+
   // Schedule the report service to run every hour from 4 AM to 11 PM
+  // at 00 start to getting adv info
   startCronJob() {
     cron.schedule('0 4-23 * * *', async () => {
       console.log('Running report service at:', new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow' }));
       await this.run();
+    }, {
+      timezone: 'Europe/Moscow'
+    });
+
+    cron.schedule('0 0 * * *', async () => {
+      console.log('Running advertisement data fetch at 00:00:', new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow' }));
+      await this.fetchAdvertisementData();
     }, {
       timezone: 'Europe/Moscow'
     });
@@ -225,10 +279,11 @@ export class ReportService {
 
 import pool from '../../database/db';
 import { User, user_type } from '../dto/user';
-import { getYesterdayDate } from '../utils/dates';
+import { getXdaysAgoArr, getYesterdayDate } from '../utils/dates';
 import { user_articles_db } from '../../database/models/user_articles';
-import { formatReportMessage } from '../utils/text';
+import { formatReportArticleMessage, formatReportMessage } from '../utils/text';
 import { processCampaigns } from '../helpers/marketing';
+import { users_db } from '../../database/models/users';
 
 const reportService = new ReportService(pool);
 reportService.startCronJob();

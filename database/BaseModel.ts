@@ -44,10 +44,9 @@ export abstract class BaseModel<T> {
     const columnNames = columns.map((col) => `"${col}"`).join(', ');
     const valuePlaceholders = columns.map((_, index) => `$${index + 1}`).join(', ');
   
-    // Учитываем все уникальные столбцы для ON CONFLICT
     const conflictColumns = uniqueColumns.map((col) => `"${String(col)}"`).join(', ');
     const conflictAction = columns
-      .filter((col) => !uniqueColumns.includes(col as keyof T)) // исключаем уникальные столбцы
+      .filter((col) => !uniqueColumns.includes(col as keyof T)) 
       .map((col) => `"${col}" = EXCLUDED."${col}"`)
       .join(', ');
   

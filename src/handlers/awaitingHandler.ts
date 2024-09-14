@@ -3,6 +3,7 @@ import { AwaitingAnswer, UserMsg } from "../dto/msgData";
 import { rStates } from "../redis";
 import { users_db } from "../../database/models/users";
 import { user_articles_db } from "../../database/models/user_articles";
+import { runPersonReport } from "../services/reportService";
 
 export async function awaitingHandler(data: UserMsg, state: string, env: any) {
   if (!data.text) {
@@ -44,7 +45,8 @@ export async function awaitingHandler(data: UserMsg, state: string, env: any) {
       case rStates.waitArticle:
         try {
           await users_db.updateArticle(data.chatId, +data.text)
-          await user_articles_db.updateArticle(data.chatId, data.text)
+          await user_articles_db.updateArticle(data.chatId, +data.text)
+          
           return new AwaitingAnswer({ result: true, text: "Ваш артикул добавлен. В меню вы можете внести дополнительные настройки для получения более точного отчета.", type: 'new_art' })
         } catch(e) {
           console.error('awaiting handler: error to set article - '+e)

@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
-import { buttons, mainOptions, Options } from './components/buttons';
+import { buttons, mainOptions, Options, setBotCommands } from './components/buttons';
 import { redis, rStates, ttls, waitingStates } from './redis';
 import { getHelp, handleStartMenu, sendImageWithText } from './components/answers';
 import { AwaitingAnswer, MessageMService, UserCb, UserMsg } from './dto/msgData';
@@ -9,6 +9,7 @@ import { callbackHandler } from './handlers/callbackHandler';
 import { awaitingHandler } from './handlers/awaitingHandler';
 import { handleAdminCommand } from './handlers/adminHandler';
 import { createChartURL } from './utils/charts';
+import { runPersonReport } from './services/reportService';
 
 dotenv.config();
 const token = process.env.TELEGRAM_TOKEN;
@@ -20,6 +21,8 @@ if (!token) {
 const bot = new TelegramBot(token, { polling: true });
 export const RediceService = new redis();
 const messageService = new MessageService(bot, RediceService.getClient());
+
+setBotCommands(bot)
 
 bot.on('callback_query', async (query: TelegramBot.CallbackQuery) => {
   if (!query.message?.chat.id) return
@@ -101,6 +104,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
       msgs.push({ chatId, messageId: answer.message_id, direction: 'outgoing' })
       await RediceService.deleteUserState(chatId)
       await bot.editMessageReplyMarkup(mainOptions(response.type).reply_markup, { chat_id: chatId, message_id: answer.message_id })
+      // runPersonReport(chatId)
     }
   };
 

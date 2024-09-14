@@ -46,8 +46,17 @@ class ArticlesModel extends BaseModel_1.BaseModel {
     }
     updateArticle(chat_id, key) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
-                yield this.insert({ article: +key, created_at: `${new Date().toISOString()}`, user_id: chat_id });
+                const query = `SELECT * FROM user_articles WHERE user_id = $1`;
+                const data = yield this.pool.query(query, [chat_id]);
+                let articles = (_b = (_a = data.rows[0]) === null || _a === void 0 ? void 0 : _a.articles) !== null && _b !== void 0 ? _b : [];
+                articles.unshift(key);
+                const marketing_cost = {};
+                if (articles.length > 5) {
+                    articles = articles.slice(0, 5);
+                }
+                yield this.update('user_id', chat_id, { articles, marketing_cost }, ['user_id']);
             }
             catch (e) {
                 console.error(e);
@@ -80,12 +89,15 @@ class ArticlesModel extends BaseModel_1.BaseModel {
             }
         });
     }
-    selectArticle(article) {
+    selectArticle(user_id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const res = yield this.select({ article });
+                const query = `SELECT * FROM user_articles WHERE user_id = $1`;
+                const res = yield this.pool.query(query, [user_id]);
                 if (res.rows.length > 0) {
-                    return res.rows[0];
+                    const article = res.rows[0];
+                    article.article = article.articles[0];
+                    return article;
                 }
                 else {
                     return null;
@@ -93,6 +105,36 @@ class ArticlesModel extends BaseModel_1.BaseModel {
             }
             catch (e) {
                 console.error('postgres: ' + e);
+            }
+        });
+    }
+    addMarketingCost(user_id, marketingCost) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                const query = `SELECT marketing_cost FROM user_articles WHERE user_id = $1`;
+                const result = yield this.pool.query(query, [user_id]);
+                let currentMarketingCost = ((_a = result.rows[0]) === null || _a === void 0 ? void 0 : _a.marketing_cost) || {};
+                for (const [date, cost] of Object.entries(marketingCost)) {
+                    if (cost !== 0 || !(date in currentMarketingCost)) {
+                        currentMarketingCost[date] = cost;
+                    }
+                }
+                const sortedDates = Object.keys(currentMarketingCost).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+                const latest30Days = sortedDates.slice(0, 30);
+                const updatedMarketingCost = latest30Days.reduce((obj, date) => {
+                    obj[date] = currentMarketingCost[date];
+                    return obj;
+                }, {});
+                const updateQuery = `
+        UPDATE user_articles 
+        SET marketing_cost = $1 
+        WHERE user_id = $2
+      `;
+                yield this.pool.query(updateQuery, [updatedMarketingCost, user_id]);
+            }
+            catch (e) {
+                console.error('Error updating marketing cost:', e);
             }
         });
     }

@@ -68,7 +68,7 @@ function callbackHandler(query, bot, RS, MS) {
             return MS.addNewAndDelOld(msgs, chatId);
         }
         //*********************** SHEETS OLD ***********************//
-        if (cb === buttons_1.cbs.setOldUserType) {
+        if (cb === buttons_1.cbs.setOldUserType || cb === buttons_1.cbs.goPrem) {
             yield RS.setUserState(chatId, redis_1.rStates.waitPremPass, redis_1.ttls.usual);
             const answer = yield bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', new buttons_1.Options([[buttons_1.buttons.menu]]));
             msgs.push({ chatId, messageId: answer.message_id, direction: 'outgoing', content: 'await_pass' });

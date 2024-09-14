@@ -45,14 +45,79 @@ class ReportService {
         this.pool = pool;
     }
     // Fetch users with type and matching notification_time
+    // if hour = 0, add all users for adv data
     getUsersForReport(hour, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            const query = `
-      SELECT * FROM users 
-      WHERE type = $2 AND notification_time = $1
-    `;
-            const result = yield this.pool.query(query, [hour, type]);
+            let query = '';
+            let params = [type];
+            if (hour > 0) {
+                query = `SELECT * FROM users WHERE type = $2 AND notification_time = $1`;
+                params = [hour, type]; // оба параметра используются
+            }
+            else {
+                query = `SELECT * FROM users WHERE type = $1`;
+            }
+            const result = yield this.pool.query(query, params);
             return result.rows;
+        });
+    }
+    // Get marketing info
+    fetchAdvertisementData() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const users = yield this.getUsersForReport(0, 'new_art');
+                if (users.length === 0) {
+                    console.log('No users with type new_art to fetch advertisement data for.');
+                    return;
+                }
+                for (const user of users) {
+                    const wbKey = user.wb_api_key;
+                    const article = user.article;
+                    if (!wbKey || !article) {
+                        console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+                        continue;
+                    }
+                    const campaignResponse = yield axios_1.default.get('https://advert-api.wildberries.ru/adv/v1/promotion/count', {
+                        headers: {
+                            'Authorization': wbKey,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const campaigns = campaignResponse.data.adverts || [];
+                    if (campaigns.length === 0) {
+                        console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+                        continue;
+                    }
+                    const now = new Date();
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(now.getDate() - 30);
+                    const recentCampaigns = campaigns.flatMap((campaign) => campaign.advert_list.filter((advert) => {
+                        const changeTime = new Date(advert.changeTime);
+                        return changeTime >= thirtyDaysAgo && changeTime <= now;
+                    }));
+                    const last30DaysDates = (0, dates_1.getXdaysAgoArr)(10);
+                    const advertIds = recentCampaigns.map((advert) => ({
+                        id: advert.advertId,
+                        dates: last30DaysDates
+                    }));
+                    if (advertIds.length === 0) {
+                        console.log(`No recent campaigns found for user with chat ID: ${user.chat_id}`);
+                        continue;
+                    }
+                    const advertDetailsResponse = yield axios_1.default.post('https://advert-api.wildberries.ru/adv/v2/fullstats', advertIds, {
+                        headers: {
+                            'Authorization': wbKey,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const result = (0, marketing_1.processCampaigns)(advertDetailsResponse.data, article);
+                    user_articles_1.user_articles_db.addMarketingCost(user.chat_id, result);
+                    console.log(`Advertisement details for user with chat ID: ${user.chat_id}:`, JSON.stringify(result));
+                }
+            }
+            catch (error) {
+                console.error('Error fetching advertisement data:', error);
+            }
         });
     }
     // Send message to user
@@ -74,24 +139,7 @@ class ReportService {
     }
     fetchWbStatistics(data, startDate, endDate) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(data);
             const url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history';
-            // 220177186
-            // 220197677
-            // 220197678
-            // 226261465
-            // 226261548
-            // 226261467
-            // 226261466
-            // 226261464
-            // 169935551
-            // 197620771
-            // 197620772
-            // 208988521
-            // 94215475
-            // 208989627
-            // 210222532
-            // 244951686
             const requestData = {
                 nmIDs: [+data[0].article],
                 period: {
@@ -143,7 +191,7 @@ class ReportService {
                     const reportData = yield this.getReportsFromWebApp(ssList);
                     for (const user of oldUsers) {
                         if (user.ss && reportData[user.ss]) {
-                            const formattedMessage = formatReportMessage(reportData[user.ss]);
+                            const formattedMessage = (0, text_1.formatReportMessage)(reportData[user.ss]);
                             yield this.sendMessage(user.chat_id, formattedMessage);
                         }
                     }
@@ -157,7 +205,7 @@ class ReportService {
                         if (user.wb_api_key && user.article) {
                             const report = yield this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key }], date, date);
                             console.log(report);
-                            const articleData = yield user_articles_1.user_articles_db.selectArticle(user.article);
+                            const articleData = yield user_articles_1.user_articles_db.selectArticle(user.chat_id);
                             if (report) {
                                 console.log(report.data[0].history);
                                 const data = report.data[0].history;
@@ -194,6 +242,7 @@ class ReportService {
         });
     }
     // Schedule the report service to run every hour from 4 AM to 11 PM
+    // at 00 start to getting adv info
     startCronJob() {
         node_cron_1.default.schedule('0 4-23 * * *', () => __awaiter(this, void 0, void 0, function* () {
             console.log('Running report service at:', new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow' }));
@@ -201,29 +250,19 @@ class ReportService {
         }), {
             timezone: 'Europe/Moscow'
         });
+        node_cron_1.default.schedule('0 0 * * *', () => __awaiter(this, void 0, void 0, function* () {
+            console.log('Running advertisement data fetch at 00:00:', new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow' }));
+            yield this.fetchAdvertisementData();
+        }), {
+            timezone: 'Europe/Moscow'
+        });
     }
 }
 exports.ReportService = ReportService;
-function formatReportMessage(data) {
-    let message = '';
-    data.forEach((row, i) => {
-        if (i === 0) {
-            message += `<b>${row[0]}</b>\n\n`;
-        }
-        else if (row[0].startsWith('ТОП')) {
-            message += `\n<b>${row[0]}</b>\n`;
-        }
-        else if (row[0].startsWith('Товар')) {
-            message += `${row[0]} ${row[1]}\n`;
-        }
-        else {
-            message += `<b>${row[0]}</b> ${row[1]}\n`;
-        }
-    });
-    return message.trim();
-}
 const db_1 = __importDefault(require("../../database/db"));
 const dates_1 = require("../utils/dates");
 const user_articles_1 = require("../../database/models/user_articles");
+const text_1 = require("../utils/text");
+const marketing_1 = require("../helpers/marketing");
 const reportService = new ReportService(db_1.default);
 reportService.startCronJob();

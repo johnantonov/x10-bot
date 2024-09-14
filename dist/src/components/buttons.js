@@ -34,6 +34,7 @@ exports.cbs = {
     cancelArt: 'art_setting_cancel',
     titleArt: 'art_setting_title',
     costArt: 'art_setting_cost',
+    goPrem: 'go_prem',
 };
 exports.buttons = {
     setWbApiKey: { text: '➕ Привязать WB API ключ', callback_data: exports.cbs.wbkey },
@@ -48,6 +49,7 @@ exports.buttons = {
     cancelArt: { text: '❌ Отменить отслеживание', callback_data: exports.cbs.cancelArt },
     titleArt: { text: '✍️ Ввести название товара', callback_data: exports.cbs.titleArt },
     costArt: { text: '💰 Ввести себестоимость товар', callback_data: exports.cbs.costArt },
+    goPrem: { text: '👑 Перейти на премиум', callback_data: exports.cbs.goPrem },
 };
 exports.wbOptions = new Options([
     [{ text: '➕ Привязать WB API ключ', callback_data: exports.cbs.wbkey }],
@@ -67,6 +69,7 @@ const mainOptions = (type) => {
     }
     if (type === 'new') {
         return new Options([
+            [exports.buttons.goPrem],
             [exports.buttons.followArticle],
             [exports.buttons.setWbApiKey],
             [exports.buttons.changeTimeToReport],
@@ -74,6 +77,7 @@ const mainOptions = (type) => {
     }
     if (type === 'new_art') {
         return new Options([
+            [exports.buttons.goPrem],
             [exports.buttons.settingsArticleReport],
             [exports.buttons.followArticle],
             [exports.buttons.setWbApiKey],
