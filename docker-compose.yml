@@ -12,7 +12,7 @@ services:
     working_dir: /usr/src/app  
     volumes:
       - .:/usr/src/app  
-    command: sh -c "npm ci && npm start"
+    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm ci && npm install && npm start"
     environment:
       - REDIS_HOST=redis
       - PGHOST=postgres
@@ -45,34 +45,33 @@ services:
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: sh -c "npm ci && npm run build && npm start"
+    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm ci && npm install && npm run build && node dist/src/services/reportService.js"
     environment:
-      - REDIS_HOST=redis
       - PGHOST=postgres
       - PGUSER=${PGUSER}
       - PGNAME=${PGNAME}
       - PGPASS=${PGPASS}
       - PGPORT=5432
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
     depends_on:
-      - redis
       - postgres
     restart: always
 
   migration:
-    image: node:18-alpine
-    working_dir: /usr/src/database
+    image: postgres:15-alpine
+    container_name: migration
     volumes:
-      - .:/usr/src/database
-    command: sh -c "sleep 10 && npm run migrate"
+      - ./database/migrations:/usr/src/database/migrations  
     environment:
-      - PGHOST=postgres
-      - PGUSER=${PGUSER}
-      - PGPASS=${PGPASS}
-      - PGPORT=5432
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASS}
+      - POSTGRES_DB=${PGNAME}
+      - PGPASSWORD=${PGPASS} 
+    command: sh -c "sleep 10 && psql -h postgres -U ${PGUSER} -d ${PGNAME} -f /usr/src/database/migrations/V1_0__create_first_table.sql"
     depends_on:
       - postgres
-    restart: "no"
-
+    restart: on-failure
+  
 volumes:
   redis_data:
   postgres_data:
