@@ -85,7 +85,7 @@ class ArticlesModel extends BaseModel<Article> {
       const query = `SELECT marketing_cost FROM user_articles WHERE user_id = $1`;
       const result = await this.pool.query(query, [user_id]);
 
-      console.log(result)
+      console.log(marketingCost)
   
       let currentMarketingCost = result.rows[0]?.marketing_cost || {};
       
@@ -95,14 +95,23 @@ class ArticlesModel extends BaseModel<Article> {
           currentMarketingCost[date] = cost;
         }
       }
-  
+
+      console.log('111')
+      console.log(marketingCost)
+      console.log(currentMarketingCost)
+      
       const sortedDates = sortObjDatesKeys(currentMarketingCost);
       const latest30Days = sortedDates.slice(0, 30);
+      console.log('222')
+      console.log(latest30Days)
       
       const updatedMarketingCost = latest30Days.reduce((obj, date) => {
         obj[date] = currentMarketingCost[date];
         return obj;
       }, {} as Record<string, number>);
+
+      console.log('3333')
+      console.log(updatedMarketingCost)
   
       const updateQuery = `
         UPDATE user_articles 
@@ -110,7 +119,7 @@ class ArticlesModel extends BaseModel<Article> {
         WHERE user_id = $2
       `;
 
-      console.log(updateQuery)
+      console.log(updatedMarketingCost, user_id)
       await this.pool.query(updateQuery, [updatedMarketingCost, user_id]);
     } catch (e) {
       console.error('Error updating marketing cost:', e);
