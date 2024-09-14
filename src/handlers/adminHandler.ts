@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 import pool from "../../database/db"
 import { sortObjDatesEntries } from "../utils/dates";
 import axios from "axios";
+import { migrations } from "../helpers/wip-quick-fix-migration";
 
 dotenv.config();
 
@@ -98,6 +99,15 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
         });
       } else {
         await bot.sendMessage(chatId, 'error to get marketing info')
+      }
+    }
+
+    if (action.startsWith('db_migrate')) {
+      const step = action.split('migrate_')[1]
+      if (step === "1") {
+        await pool.query(migrations.first[0])
+        await pool.query(migrations.first[1])
+        await pool.query(migrations.first[2])
       }
     }
     
