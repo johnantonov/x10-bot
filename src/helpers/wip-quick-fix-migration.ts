@@ -8,7 +8,7 @@ export const migrations = {
     notification_time NUMERIC,
     added_at TIMESTAMP DEFAULT NOW(),
     ss VARCHAR,
-    ss_report BOOLEAN,
+    ss_report BOOLEAN
 );`,
 
 `CREATE TABLE IF NOT EXISTS user_articles (
@@ -18,7 +18,7 @@ export const migrations = {
     self_cost BIGINT,
     other_cost BIGINT,
     marketing_cost JSONB,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW()
 );`,
 
 `ALTER TABLE user_articles ADD CONSTRAINT unique_user_id UNIQUE (user_id);
