@@ -34,6 +34,9 @@ class ArticlesModel extends BaseModel<Article> {
         articles = articles.slice(0, 5);
       }
   
+      console.log(articles)
+      console.log(chat_id)
+      console.log(marketing_cost)
       await this.update('user_id', chat_id, { articles, marketing_cost }, ['user_id']);
     } catch (e) {
       console.error(e);
