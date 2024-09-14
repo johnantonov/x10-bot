@@ -103,12 +103,13 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
     }
 
     if (action.startsWith('db_migrate')) {
-      const step = action.split('migrate_')[1]
-      if (step === "1") {
-        await pool.query(migrations.first[0])
-        await pool.query(migrations.first[1])
-        await pool.query(migrations.first[2])
+      const step = +action.split('migrate_')[1]
+      try {
+        migrations[step].forEach(m => pool.query(m))
+      } catch (e) {
+        console.error('error during migration process')
       }
+
     }
     
   } catch (e) {
