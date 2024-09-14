@@ -9,7 +9,6 @@ import { callbackHandler } from './handlers/callbackHandler';
 import { awaitingHandler } from './handlers/awaitingHandler';
 import { handleAdminCommand } from './handlers/adminHandler';
 import { createChartURL } from './utils/charts';
-import { runPersonReport } from './services/reportService';
 
 dotenv.config();
 const token = process.env.TELEGRAM_TOKEN;

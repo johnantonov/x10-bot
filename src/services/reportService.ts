@@ -2,9 +2,9 @@ import { Pool } from 'pg';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
 import cron from 'node-cron';
-import express from 'express';
+// import express from 'express';
 // const app = express();
-const port = process.env.BASE_PORT;
+// const port = process.env.BASE_PORT;
 
 // app.use(express.json());
 dotenv.config();
@@ -29,11 +29,11 @@ dotenv.config();
 //   console.log(`API Server running on port ${port}`);
 // });
 
-export function runPersonReport(chat_id: number) {
-  axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
-  .then(response => console.log('Report initiated: ', response.data))
-  .catch(error => console.error('Failed to initiate report: ', error));
-}
+// export function runPersonReport(chat_id: number) {
+//   axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
+//   .then(response => console.log('Report initiated: ', response.data))
+//   .catch(error => console.error('Failed to initiate report: ', error));
+// }
 
 export class ReportService {
   private pool: Pool;
@@ -234,28 +234,28 @@ export class ReportService {
     } 
   }
 
-  async runForUser(user: User): Promise<void> {
-    try {
-      if (user.type === 'old_ss' && user.ss) {
-        const reportData = await this.getReportsFromWebApp([user.ss]);
-        if (reportData[user.ss]) {
-          const formattedMessage = formatReportMessage(reportData[user.ss]);
-          await this.sendMessage(user.chat_id, formattedMessage);
-        }
-      } else if (user.type === 'new_art' && user.article && user.wb_api_key) {
-        const date = getYesterdayDate();
-        const report = await this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key}], date, date);
-        if (report) {
-          const articleData = await user_articles_db.selectArticle(user.chat_id);
-          const data = report.data[0].history;
-          const message = formatReportArticleMessage(data, articleData, user, date);
-          await this.sendMessage(user.chat_id, message);
-        }
-      }
-    } catch (error) {
-      console.error('Error running report for user:', error);
-    }
-  }
+  // async runForUser(user: User): Promise<void> {
+  //   try {
+  //     if (user.type === 'old_ss' && user.ss) {
+  //       const reportData = await this.getReportsFromWebApp([user.ss]);
+  //       if (reportData[user.ss]) {
+  //         const formattedMessage = formatReportMessage(reportData[user.ss]);
+  //         await this.sendMessage(user.chat_id, formattedMessage);
+  //       }
+  //     } else if (user.type === 'new_art' && user.article && user.wb_api_key) {
+  //       const date = getYesterdayDate();
+  //       const report = await this.fetchWbStatistics([{ article: user.article, key: user.wb_api_key}], date, date);
+  //       if (report) {
+  //         const articleData = await user_articles_db.selectArticle(user.chat_id);
+  //         const data = report.data[0].history;
+  //         const message = formatReportArticleMessage(data, articleData, user, date);
+  //         await this.sendMessage(user.chat_id, message);
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Error running report for user:', error);
+  //   }
+  // }
 
   // Schedule the report service to run every hour from 4 AM to 11 PM
   // at 00 start to getting adv info

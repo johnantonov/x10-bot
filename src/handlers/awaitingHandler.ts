@@ -3,7 +3,6 @@ import { AwaitingAnswer, UserMsg } from "../dto/msgData";
 import { rStates } from "../redis";
 import { users_db } from "../../database/models/users";
 import { user_articles_db } from "../../database/models/user_articles";
-import { runPersonReport } from "../services/reportService";
 
 export async function awaitingHandler(data: UserMsg, state: string, env: any) {
   if (!data.text) {
