@@ -8,12 +8,11 @@ services:
     restart: always
 
   app:
-    build: .
-    working_dir: /usr/src/app
+    image: node:18-alpine
+    working_dir: /usr/src/app  
     volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
-    command: npm start
+      - .:/usr/src/app  
+    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm install && npm start"
     environment:
       - REDIS_HOST=redis
       - PGHOST=postgres
@@ -42,12 +41,11 @@ services:
     restart: always
 
   report-service:
-    build: .
+    image: node:18-alpine
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-      - /usr/src/app/node_modules
-    command: sh -c "npm install && npm run build && node dist/src/services/reportService.js && node dist/src/server.js"
+    command: sh -c "chmod +x ./node_modules/.bin/ts-node && chmod +x ./node_modules/.bin/tsc && npm install && npm run build && node dist/src/services/reportService.js"
     environment:
       - PGHOST=postgres
       - PGUSER=${PGUSER}
