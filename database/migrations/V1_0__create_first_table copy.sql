@@ -6,19 +6,18 @@ CREATE TABLE IF NOT EXISTS users (
     article BIGINT,
     notification_time NUMERIC,
     added_at TIMESTAMP DEFAULT NOW(),
-    ss VARCHAR
+    ss VARCHAR,
+    ss_report BOOLEAN,
 );
 
 CREATE TABLE IF NOT EXISTS user_articles (
-    article NUMERIC PRIMARY KEY UNIQUE,
-    user_id BIGINT REFERENCES users(chat_id) ON DELETE CASCADE,
+    user_id BIGINT PRIMARY KEY UNIQUE,
+    article NUMERIC[],
     name VARCHAR,
     self_cost BIGINT,
     other_cost BIGINT,
-    marketing_cost BIGINT,
-    created_at TIMESTAMP DEFAULT NOW()
+    marketing_cost JSONB,
+    created_at TIMESTAMP DEFAULT NOW(),
 );
 
 ALTER TABLE user_articles ADD CONSTRAINT unique_user_id UNIQUE (user_id);
-
-ALTER TABLE users ADD COLUMN ss_report BOOLEAN;
