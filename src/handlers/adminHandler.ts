@@ -93,6 +93,9 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
           if (err) {
             await bot.sendMessage(chatId, 'error to get marketing info')
           } else {
+            console.log(`SELECT * FROM user_articles WHERE user_id = ${user}`)
+            console.log(result.rows[0])
+            console.log(result.rows[0]?.marketing_cost)
             const answer = result.rows[0]?.marketing_cost || {}
             await bot.sendMessage(chatId, JSON.stringify(sortObjDatesEntries(answer)))
           }
