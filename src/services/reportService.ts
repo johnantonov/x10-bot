@@ -4,10 +4,10 @@ import * as dotenv from 'dotenv';
 import cron from 'node-cron';
 import express from 'express';
 const app = express();
-const port = process.env.BASE_PORT;
 
 app.use(express.json());
 dotenv.config();
+const port = process.env.BASE_PORT;
 
 app.post('/runReportForUser', async (req, res) => {
   const { chatId } = req.body;
