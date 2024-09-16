@@ -20,6 +20,7 @@ export function createChartURL(labels: string[], datasets: { label: string, data
       },
     },
   });
+  chart.setWidth(1200)
   return chart.getUrl();
 }
 
