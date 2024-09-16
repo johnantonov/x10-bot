@@ -309,5 +309,5 @@ import { users_db } from '../../database/models/users';
 import { sendImageWithText } from '../components/answers';
 import { createMarketingChart } from '../utils/charts';
 
-const reportService = new ReportService(pool);
+export const reportService = new ReportService(pool);
 reportService.startCronJob();

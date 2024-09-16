@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api"
-import { ReportService, runPersonReport } from "../services/reportService"
+import { reportService, ReportService, runPersonReport } from "../services/reportService"
 import * as dotenv from 'dotenv';
 import pool from "../../database/db"
 import { sortObjDatesEntries } from "../utils/dates";
@@ -28,8 +28,7 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
 
     if (action === 'run_report_service') {
       console.log('admin started report serivce')
-      const RS = new ReportService(pool);
-      RS.run()
+      reportService.run()
     }
 
     if (action.startsWith('clean_db')) {
