@@ -75,7 +75,7 @@ export class MessageService {
     }
   }
 
-  // delete msg
+  // delete msg from redis
   async deleteMessageFromStorage(chatId: number, messageId: number) {
     const messageKey = `messages:${chatId}`;
     const messages = await this.getMessages(chatId);

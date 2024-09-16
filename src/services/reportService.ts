@@ -147,6 +147,20 @@ export class ReportService {
     }
   }
 
+  async sendPhoto(chatId: number, image: any): Promise<void> {    
+    const telegramApiUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendPhoto`;
+  
+    try {
+      await axios.post(telegramApiUrl, {
+        chat_id: chatId,
+        photo: image,
+      });
+      console.log(`Report Service: Photo sent to chatId: ${chatId}`);
+    } catch (error) {
+      console.error(`Report Service: Failed to send photo to chatId: ${chatId}`, error);
+    }
+  }
+
   async fetchWbStatistics(data: [{ article: number, key: string }], startDate: string, endDate: string) {
     const url = 'https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail/history';
 
@@ -248,8 +262,12 @@ export class ReportService {
         if (report) {
           const articleData = await user_articles_db.selectArticle(user.chat_id);
           const data = report.data[0].history;
-          const message = formatReportArticleMessage(data, articleData, user, date);
+          const message = formatReportArticleMessage(data, articleData, user, date); 
+          const marketingChart = createMarketingChart(articleData?.marketing_cost)
           await this.sendMessage(user.chat_id, message);
+          if (marketingChart) {
+            return this.sendPhoto(user.chat_id, marketingChart)
+          }
         }
       }
     } catch (error) {
@@ -284,6 +302,8 @@ import { user_articles_db } from '../../database/models/user_articles';
 import { formatReportArticleMessage, formatReportMessage } from '../utils/text';
 import { processCampaigns } from '../helpers/marketing';
 import { users_db } from '../../database/models/users';
+import { sendImageWithText } from '../components/answers';
+import { createMarketingChart } from '../utils/charts';
 
 const reportService = new ReportService(pool);
 reportService.startCronJob();

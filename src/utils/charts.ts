@@ -22,3 +22,21 @@ export function createChartURL(labels: string[], datasets: { label: string, data
   });
   return chart.getUrl();
 }
+
+export function createMarketingChart(expensesData: Record<string, number>) {
+  try {
+    const labels = Object.keys(expensesData);
+    const data = Object.values(expensesData);
+  
+    const chartURL = createChartURL(labels, [{
+      label: 'Расходы на рекламу',
+      data: data,
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+    }]);
+  
+    return chartURL
+  } catch (e) {
+    console.error('error creating marketing chart '+e)
+  }
+}

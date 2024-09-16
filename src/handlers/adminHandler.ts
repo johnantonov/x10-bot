@@ -14,7 +14,7 @@ const helpInfo = `
 /admin__delete_user_{id} - удалить пользователя из таблицы users
 /admin__get_marketing_costs - запуск сбора рекламных расходов
 /admin__marketing_{id} - получение текущей маркетинговой информации по пользователю
-НЕ РАБОТАЕТ/admin__send_report_{id} - отправить отчет пользователю внеочереди
+/admin__send_report_{id} - отправить отчет пользователю внеочереди
 `
 
 export async function handleAdminCommand(chatId: number, command: string, bot: TelegramBot) {
