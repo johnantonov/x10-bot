@@ -31,11 +31,15 @@ export function formatReportArticleMessage(data: any, articleData: Article | nul
 
   const rev = data[0].buyoutsSumRub - selfCost - (articleData?.marketing_cost[date] ?? 0);
 
+  const formatNumber = (num: number): string => {
+    return num % 1 === 0 ? num.toString() : num.toFixed(2);
+  };
+
   let message = `
-Заказы ${data[0].ordersCount} шт на ${data[0].ordersSumRub} руб
-Выкупы ${data[0].buyoutsCount} шт на ${data[0].buyoutsSumRub} руб
-Рекламный бюджет ${articleData?.marketing_cost[date] ?? 0}
-<b>Прибыль: ${rev}</b>`;
+Заказы ${data[0].ordersCount} шт на ${formatNumber(data[0].ordersSumRub)} руб
+Выкупы ${data[0].buyoutsCount} шт на ${formatNumber(data[0].buyoutsSumRub)} руб
+Рекламный бюджет ${formatNumber(articleData?.marketing_cost[date] ?? 0)}
+<b>Прибыль: ${formatNumber(rev)}</b>`;
 
   return `<b>Отчет за ${date}: ${name}</b>\n${message}`;
 }

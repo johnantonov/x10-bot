@@ -31,7 +31,7 @@ export function createMarketingChart(expensesData: Record<string, number>) {
     const chartURL = createChartURL(labels, [{
       label: 'Расходы на рекламу',
       data: data,
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      backgroundColor: 'rgba(255, 99, 132, 0.8)',
       borderColor: 'rgba(75, 192, 192, 1)',
     }]);
   

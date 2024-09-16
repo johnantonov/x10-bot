@@ -232,7 +232,11 @@ export class ReportService {
             if (report) {
               const data = report.data[0].history;
               const message = formatReportArticleMessage(data, articleData, user, date)
+              const marketingChart = createMarketingChart(articleData?.marketing_cost)
               this.sendMessage(user.chat_id, message)
+              if (marketingChart) {
+                return this.sendPhoto(user.chat_id, marketingChart)
+              }
             } else if (!report && articleData) {
               this.sendMessage(user.chat_id, `К сожалению, нам не удалось получить отчета за ${date} по ${articleData?.name} ${user.article}`)
             } else {
