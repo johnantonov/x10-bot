@@ -77,13 +77,16 @@ export class ReportService {
     }
   }
 
-  async sendPhoto(chatId: number, image: any): Promise<void> {    
+  async sendPhoto(chatId: number, image: any, caption?: string, reply_markup?: Options['reply_markup']): Promise<void> {    
     const telegramApiUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendPhoto`;
   
     try {
       await axios.post(telegramApiUrl, {
         chat_id: chatId,
         photo: image,
+        caption: caption,
+        parse_mode: 'HTML', 
+        reply_markup: reply_markup
       });
       console.log(`Report Service: Photo sent to chatId: ${chatId}`);
     } catch (error) {
@@ -111,13 +114,12 @@ export class ReportService {
     if (user.type === 'old_ss' && user.ss) {
       if (typeProcess === 'one') {
         data = await this.getReportsFromWebApp([user.ss]);
-        const imgMessageId = await this.sendPhoto(user.chat_id, data[user.ss][0][3])
-        const message_id = await this.sendMessage(user.chat_id, data[user.ss][0][2], returnMenu(true).reply_markup);
+
+        const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(true).reply_markup)
         return message_id
       } else {
         if (data[user.ss]) {
-          const imgMessageId = await this.sendPhoto(user.chat_id, data[user.ss][0][3])
-          const message_id = await this.sendMessage(user.chat_id, data[user.ss][0][2], returnMenu(true).reply_markup);
+          const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(true).reply_markup)
           return message_id
         }
       }
@@ -169,6 +171,7 @@ import { users_db } from '../../database/models/users';
 import TelegramBot from 'node-telegram-bot-api';
 import { mainOptions, Options, returnMenu } from '../components/buttons';
 import { getYesterdayDate } from '../utils/dates';
+import { parse } from 'path';
 
 export const reportService = new ReportService(pool);
 reportService.startCronJob();

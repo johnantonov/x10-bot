@@ -45,7 +45,7 @@ services:
     working_dir: /usr/src/app
     volumes:
       - .:/usr/src/app
-    command: sh -c "npm install && npm run build && node dist/src/services/reportService.js"
+    command: sh -c "npm install && npm install -g typescript && npm run build && node dist/src/services/reportService.js"
     environment:
       - PGHOST=inner-x10Bot-postgres
       - PGUSER=${PGUSER}
