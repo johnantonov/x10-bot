@@ -1,7 +1,11 @@
-docker-compose up redis -d
+docker-compose up inner-x10Bot-redis -d
 
-docker-compose up postgres -d
+docker-compose up inner-x10Bot-postgres -d
 
-docker-compose up report-service -d
+docker-compose up inner-x10Bot-report-service -d
 
-docker-compose up app 
+docker-compose up inner-x10Bot-app
+
+OR
+
+docker-compose up

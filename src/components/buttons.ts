@@ -39,11 +39,15 @@ export const cbs = {
   yes: '_yes',
   no: '_no',
   menu: 'menu',
+  menuAndClean: 'menu_clean',
   settingsArt: 'art_settings',
   cancelArt: 'art_setting_cancel',
   titleArt: 'art_setting_title',
   costArt: 'art_setting_cost',
   goPrem: 'go_prem',
+  getReportNow: 'get_report_now',
+  loading: 'loading',
+  editReportProducts: 'edit_report_products',
 }
 
 export const buttons = {
@@ -55,11 +59,15 @@ export const buttons = {
   onTable: { text: '📂 Подключить отчет из Google Sheets', callback_data: cbs.onTable },
   offTable: { text: '❌ Отключить отчет из Google Sheets', callback_data: cbs.offTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
+  menuAndClean: { text: '↩️ Меню', callback_data: cbs.menuAndClean },
   settingsArticleReport: { text: '⚙️ Настроить отчет', callback_data: cbs.settingsArt },
   cancelArt: { text: '❌ Отменить отслеживание', callback_data: cbs.cancelArt },
   titleArt: { text: '✍️ Ввести название товара', callback_data: cbs.titleArt },
   costArt: { text: '💰 Ввести себестоимость товар', callback_data: cbs.costArt },
   goPrem: { text: '👑 Перейти на премиум', callback_data: cbs.goPrem },
+  getReportNow: { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow },
+  editReportProducts: { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts },
+  loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
 }
 
 export const wbOptions = new Options([
@@ -67,37 +75,30 @@ export const wbOptions = new Options([
   [{ text: '❌ Удалить артикул', callback_data: cbs.deleteArticle }],
 ]);
 
-export const mainOptions = (type?: user_type) => {
+export const returnMenu = (clean: boolean = false) => {
+  return new Options([
+    [clean ? buttons.menuAndClean : buttons.menu]
+  ])
+}
+
+export const mainOptions = (type?: user_type, waitReport?: boolean) => {
   if (type?.startsWith('old')) {
     if (type.endsWith('_ss')) {
-      return new Options([
+      const btns = [
+        [buttons.getReportNow],
+        [buttons.editReportProducts],
         [buttons.changeTimeToReport],
         [buttons.offTable],
-      ]);
+      ]
+      if (waitReport) {
+        btns[0] = [buttons.loading]
+      }
+      return new Options(btns);
     }
     return new Options([
         [buttons.onTable],
       ]);
     }
-
-  if (type === 'new') {
-    return new Options([
-      [buttons.goPrem],
-      [buttons.followArticle],
-      [buttons.setWbApiKey],
-      [buttons.changeTimeToReport],
-    ]);
-  }
-
-  if (type === 'new_art') {
-    return new Options([
-      [buttons.goPrem],
-      [buttons.settingsArticleReport],
-      [buttons.followArticle],
-      [buttons.setWbApiKey],
-      [buttons.changeTimeToReport],
-    ]);
-  }
   
   return startOptions
 } 
@@ -118,8 +119,7 @@ export const yesNo = (cbPart: string) => {
 }
 
 const startOptions = new Options([
-  [{ text: '✨ Попробовать', callback_data: cbs.setNewUserType }],
-  [{ text: '👑 Я премиум клиент', callback_data: cbs.setOldUserType }],
+  [{ text: '👑 Зарегистрироваться', callback_data: cbs.setOldUserType }],
 ])
 
 export function generateReportTimeButtons(rep: string, page: number = 0): TelegramBot.InlineKeyboardButton[][] {

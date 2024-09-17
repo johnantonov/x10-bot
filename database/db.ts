@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const pool = new Pool({
-  host: 'postgres',
+  host: 'inner-x10Bot-postgres',
   port: Number(process.env.PGPORT),
   user: process.env.PGUSER,
   password: process.env.PGPASS,

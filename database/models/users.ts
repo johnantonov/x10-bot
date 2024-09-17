@@ -22,15 +22,14 @@ class UsersModel extends BaseModel<User> {
       }
     }
 
-  async updateType(chat_id: number, ss?: string | undefined, decreaseTo?: user_type): Promise<void> {
+  async updateType(chat_id: number, ss: string, decreaseTo?: user_type): Promise<void> {
     if (decreaseTo) {
       await this.update('chat_id', chat_id, { type: decreaseTo }, ['chat_id'])
       return
     }
-    const newType = ss ? 'old' : 'new'
 
     const updateData: Partial<User> = {
-      type: newType,
+      type: 'old',
       ss,
     };
 
@@ -39,92 +38,12 @@ class UsersModel extends BaseModel<User> {
 
   async updateReportTime(chat_id: number, time: number) {
     try {
-      const currentType = await this.select({ chat_id }).then(res => { return res.rows[0].type })
-      if (currentType === 'new_art' || currentType === 'new') {
-        const updateData: Partial<User> = { notification_time: time, type: 'new_art' };
-        await this.update('chat_id', chat_id, updateData, ['chat_id']);
-        return 'new_art'
-      } else {
-        const updateData: Partial<User> = { notification_time: time, type: 'old_ss' };
-        await this.update('chat_id', chat_id, updateData, ['chat_id']);
-        console.log('postgres: update ss report time for '+chat_id)
-        return 'old_ss'
-      }
+      const updateData: Partial<User> = { notification_time: time, type: 'old_ss' };
+      await this.update('chat_id', chat_id, updateData, ['chat_id']);
+      console.log('postgres: update ss report time for '+chat_id)
+      return 'old_ss'
     } catch (e) {
       console.error('postgres: error to update ss report time for '+chat_id+" - "+e)
-    }
-  }
-
-  async checkWbApiKey(chat_id: number) {
-    try {
-      const user = await this.select({ chat_id });
-  
-      if (user.rows.length > 0 && user.rows[0].wb_api_key) {
-        return user.rows[0].wb_api_key; 
-      } else {
-        return false; 
-      }
-    } catch (e) {
-      console.error('postgres: error to check key - '+e)
-    }
-  }
-  
-  async checkTrack(chat_id: number) {
-    try {
-      const user = await this.select({ chat_id });
-
-      if (user.rows.length > 0 && user.rows[0].article) {
-        return user.rows[0].article; 
-      } else {
-        return false; 
-      }
-    } catch(e) {
-      console.error('postgres: error to get article - '+e)
-    }
-  }
-
-  async updateWbApiKey(chat_id: number, key: string): Promise<void> {
-    try {
-      const updateData: Partial<User> = { wb_api_key: key };
-      await this.update('chat_id', chat_id, updateData, ['chat_id']);
-      console.log('postres: success to update wb api key for '+ chat_id)
-    } catch(e) {
-      console.error('postgres: error to update wb api key - '+e)
-    }
-  }
-
-  async updateArticle(chat_id: number, key: number): Promise<void> {
-    try {
-      const updateData: Partial<User> = { article: key, type: 'new_art'};
-      await this.update('chat_id', chat_id, updateData, ['chat_id']);
-      console.log('postres: success to update article for '+ chat_id)
-    } catch(e) {
-      console.error('postgres: error to update article - '+e)
-    }
-  }
-
-  async checkWbApiKeyAndTrack(chat_id: number) {
-    try {
-      const user = await this.select({ chat_id });
-  
-      if (user.rows.length > 0) {
-        return [ user.rows[0].wb_api_key, user.rows[0].article ]
-      } else {
-        return [ false, false ]
-      }
-    } catch (e) {
-      console.error('postgres: error to check article and key - '+e)
-      return [ false, false ]
-    }
-  }
-
-  async cancelFollowingArticle(chat_id: number) {
-    try {
-      const updateData: Partial<User> = { article: null, type: 'new'};
-      await this.update('chat_id', chat_id, updateData, ['chat_id']);
-      console.log('postres: success to cancel article for '+ chat_id)
-    } catch(e) {
-      console.error('postgres: error while canceling following article - '+e)
     }
   }
 

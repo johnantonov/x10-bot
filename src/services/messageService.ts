@@ -1,6 +1,6 @@
 import { Redis } from 'ioredis';
 import TelegramBot, { ChatId } from 'node-telegram-bot-api';
-import { MessageMService } from '../dto/msgData';
+import { MessageMS } from '../dto/msgData';
 
 export class MessageService {
   private bot: TelegramBot;
@@ -22,7 +22,7 @@ export class MessageService {
   }
 
   // save msg
-  async saveMessage({ chatId, messageId, direction, content } : MessageMService) {
+  async saveMessage({ chatId, messageId, direction, content } : MessageMS) {
     const messageKey = `messages:${chatId}`;
     const message = {
       messageId,
@@ -34,14 +34,14 @@ export class MessageService {
   }
 
   // save msgs
-  async saveMessages(msgs: MessageMService[]) {
+  async saveMessages(msgs: MessageMS[]) {
     for (const msg of msgs) {
       await this.saveMessage(msg)
     }
   }
 
   // delete all current msgs and add new array of msgs
-  async addNewAndDelOld(msgs: MessageMService[], chatId: number) {
+  async addNewAndDelOld(msgs: MessageMS[], chatId: number) {
     await this.deleteAllMessages(chatId)
     await this.saveMessages(msgs)
   }

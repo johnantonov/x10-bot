@@ -4,8 +4,6 @@ import { SendMessageOptions } from 'node-telegram-bot-api';
 import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
-import { user_type } from "../dto/user";
-import { user_articles_db } from "../../database/models/user_articles";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
@@ -27,18 +25,6 @@ export async function handleStartMenu(bot: TelegramBot, msg: UserMsg | UserCb, c
     }
   } catch (error) {
     console.error('error while processing the /start command', error);
-    return bot.sendMessage(msg.chatId, 'Произошла ошибка. Попробуйте позже.');
-  }
-}
-
-
-export async function handleCancelArticle(bot: TelegramBot, msg: UserMsg | UserCb) {
-  try {
-    await users_db.cancelFollowingArticle(msg.chatId) 
-    await user_articles_db.deleteArticle(msg.chatId)
-    return sendImageWithText(bot, msg.chatId, 'success.png', 'Вы успешно отписались от отчетов по артикулу.', mainOptions('new'));
-  } catch (e) {
-    console.error('error while canceling following article ' + e);
     return bot.sendMessage(msg.chatId, 'Произошла ошибка. Попробуйте позже.');
   }
 }

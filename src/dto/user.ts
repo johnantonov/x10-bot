@@ -1,4 +1,4 @@
-export type user_type = 'old' | 'new' | 'old_ss' | 'new_art'
+export type user_type = 'old' | 'old_ss' 
 
 export class User {
   chat_id: number;

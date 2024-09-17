@@ -59,10 +59,28 @@ export class AwaitingAnswer {
   }
 }
 
-export interface MessageMService {
+export interface IMessageService {
   chatId: number; 
   messageId: number;
-  direction: 'incoming' | 'outgoing';
+  direction?: 'incoming' | 'outgoing';
   content?: string | undefined;
   special?: any;
+}
+
+export class MessageMS {
+  chatId: number; 
+  messageId: number;
+  direction?: 'incoming' | 'outgoing';
+  content?: string | undefined;
+  special?: any;
+
+  [key: string]: any;
+
+  constructor (data: IMessageService) {
+    this.chatId = data.chatId; 
+    this.messageId = data.messageId;
+    this.direction = data.direction;
+    this.content = data.content;
+    this.special = data.special;
+  }
 }
