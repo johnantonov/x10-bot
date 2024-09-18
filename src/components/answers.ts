@@ -36,6 +36,6 @@ export function sendImageWithText(
   caption?: string,
   options?: SendMessageOptions
 ): Promise<any> {
-  const imagePath = resolve(__dirname, `../../public/messageImages/${imageName}`);
+  const imagePath = resolve(__dirname, `../../../public/messageImages/${imageName}`);
   return bot.sendPhoto(chatId, imagePath, { caption, ...options });
 }
