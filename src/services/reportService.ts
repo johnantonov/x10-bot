@@ -5,6 +5,15 @@ import cron from 'node-cron';
 import express from 'express';
 const app = express();
 
+dotenv.config();
+
+const isReportService = process.env.SERVICE_TYPE === 'report';
+
+if (!isReportService) {
+  console.log('This service is not configured to run report or API');
+  process.exit(0); 
+}
+
 app.use(express.json());
 dotenv.config();
 const port = process.env.BASE_PORT;
@@ -168,10 +177,8 @@ export class ReportService {
 import pool from '../../database/db';
 import { User, user_type } from '../dto/user';
 import { users_db } from '../../database/models/users';
-import TelegramBot from 'node-telegram-bot-api';
 import { mainOptions, Options, returnMenu } from '../components/buttons';
 import { getYesterdayDate } from '../utils/dates';
-import { parse } from 'path';
 
 export const reportService = new ReportService(pool);
 reportService.startCronJob();
