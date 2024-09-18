@@ -9,4 +9,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", "dist/src/bot.js"]
+CMD ["node", "/usr/src/app/dist/src/bot.js"]
