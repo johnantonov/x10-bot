@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/bot.js",
-    "report": "node dist/services/reportService.js",
+    "start": "node dist/src/bot.js",
+    "report": "node dist/src/services/reportService.js",
     "build": "tsc"
   },
   "keywords": [],
