@@ -10,6 +10,6 @@ COPY . .
 RUN chmod +x ./node_modules/.bin/tsc
 RUN npm run build
 
-COPY public .
+COPY public /usr/src/app
 
 CMD ["node", "dist/src/bot.js"]
