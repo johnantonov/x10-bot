@@ -8,11 +8,9 @@ services:
     restart: always
 
   inner-x10Bot-app:
-    image: node:18-alpine
-    working_dir: /usr/src/app  
-    volumes:
-      - .:/usr/src/app  
-    command: sh -c "npm install && npm start"
+    build: .
+    image: x10-inner-bot-app
+    working_dir: /usr/src/app
     environment:
       - REDIS_HOST=inner-x10Bot-redis
       - PGHOST=inner-x10Bot-postgres
@@ -41,11 +39,10 @@ services:
     restart: always
 
   inner-x10Bot-report-service:
-    image: node:18-alpine
+    build: .
+    image: x10-inner-bot-report-service
     working_dir: /usr/src/app
-    volumes:
-      - .:/usr/src/app
-    command: sh -c "npm install && npm install -g typescript && npm run build && node dist/src/services/reportService.js"
+    command: sh -c "node dist/src/services/reportService.js"
     environment:
       - PGHOST=inner-x10Bot-postgres
       - PGUSER=${PGUSER}
@@ -57,7 +54,7 @@ services:
     depends_on:
       - inner-x10Bot-postgres
     restart: always
-  
+
 volumes:
   x10-inner-bot_redis_data:
   x10-inner-bot_postgres_data:
