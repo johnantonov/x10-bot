@@ -153,7 +153,6 @@ export class ReportService {
 function startServices() {
   if (!isReportService) {
     console.log('This service is not configured to run report or API');
-    return 
   } else {
     const app = express();
     app.use(express.json());
