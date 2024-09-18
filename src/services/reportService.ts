@@ -3,41 +3,15 @@ import axios from 'axios';
 import * as dotenv from 'dotenv';
 import cron from 'node-cron';
 import express from 'express';
-const app = express();
+import pool from '../../database/db';
+import { User, user_type } from '../dto/user';
+import { users_db } from '../../database/models/users';
+import { mainOptions, Options, returnMenu } from '../components/buttons';
+import { getYesterdayDate } from '../utils/dates';
 
 dotenv.config();
 
 const isReportService = process.env.SERVICE_TYPE === 'report';
-
-if (!isReportService) {
-  console.log('This service is not configured to run report or API');
-  process.exit(0); 
-}
-
-app.use(express.json());
-dotenv.config();
-const port = process.env.BASE_PORT;
-
-app.post('/runReportForUser', async (req, res) => {
-  const { chatId } = req.body;
-  try {
-    const RS = new ReportService(pool);
-    const user = await users_db.getUserById(chatId);
-    if (user) {
-      const id = await RS.runForUser(user);
-      res.status(200).send('Report run successfully for user.');
-      return id
-    } else {
-      res.status(404).send('User not found.');
-    }
-  } catch (error) {
-    res.status(500).send('Error running report for user.');
-  }
-});
-
-app.listen(port, () => {
-  console.log(`API Server running on port ${port}`);
-});
 
 export async function runPersonReport(chat_id: number): Promise<number | null> {
   return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
@@ -174,11 +148,45 @@ export class ReportService {
   }
 }
 
-import pool from '../../database/db';
-import { User, user_type } from '../dto/user';
-import { users_db } from '../../database/models/users';
-import { mainOptions, Options, returnMenu } from '../components/buttons';
-import { getYesterdayDate } from '../utils/dates';
 
-export const reportService = new ReportService(pool);
-reportService.startCronJob();
+
+function startServices() {
+  if (!isReportService) {
+    console.log('This service is not configured to run report or API');
+    return 
+  } else {
+    const app = express();
+    app.use(express.json());
+    dotenv.config();
+    const port = process.env.BASE_PORT;
+    
+    app.post('/runReportForUser', async (req, res) => {
+      const { chatId } = req.body;
+      try {
+        const RS = new ReportService(pool);
+        const user = await users_db.getUserById(chatId);
+        if (user) {
+          const id = await RS.runForUser(user);
+          res.status(200).send('Report run successfully for user.');
+          return id
+        } else {
+          res.status(404).send('User not found.');
+        }
+      } catch (error) {
+        res.status(500).send('Error running report for user.');
+      }
+    });
+    
+    app.listen(port, () => {
+      console.log(`API Server running on port ${port}`);
+    });
+  
+    const reportService = new ReportService(pool);
+    reportService.startCronJob();
+    return reportService
+  }
+}
+
+// Запуск соответствующего сервиса
+const reportService = startServices();
+export { reportService }

@@ -24,7 +24,9 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
 
     if (action === 'run_report_service') {
       console.log('admin started report serivce')
-      reportService.run()
+      if (reportService) {
+        reportService.run()
+      }
     }
 
     if (action.startsWith('clean_db')) {
