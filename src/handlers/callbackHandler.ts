@@ -29,7 +29,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     }
   }
 
-//*********************** CONNECTIONS ***********************//
+//*********************** ONE CONNECTION ***********************//
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
@@ -66,17 +66,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await MS.delNewDelOld(msgs, chatId);
   }
 
-  if (cb === cbs.getAllReportsNow) {
-    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
-    const reportMessageId = await runPersonReport(chatId)
-    if (!reportMessageId) {
-      await MS.editMessage(chatId, messageId, 
-        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        mainOptions().reply_markup)
-    } 
-    await MS.delNewDelOld(msgs, chatId);
-  }
-
   if (cb === cbs.editReportProducts) {
     const user = await users_db.getUserById(chatId);
     if (user) {
@@ -85,6 +74,20 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
         returnMenu(true).reply_markup, 'editProducts.jpg')
     } 
   }
+
+//*********************** ALL CONNECTIONS ***********************//
+
+  // if (cb === cbs.getAllReportsNow) {
+  //   await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
+  //   const reportMessageId = await runPersonReport(chatId, type, s)
+  //   if (!reportMessageId) {
+  //     await MS.editMessage(chatId, messageId, 
+  //       'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+  //       mainOptions().reply_markup)
+  //   } 
+  //   await MS.delNewDelOld(msgs, chatId);
+  // }
+
 
   // if (cb.startsWith(cbs.offTable)) {
   //   if (cb === cbs.offTable) {
