@@ -97,7 +97,8 @@ export class MessageService {
         try {
           console.log(messages)
           if (exclude && message.special === exclude && !specialFound) {
-            specialFound = true
+            specialFound = true;
+            continue;
           };
           await this.bot.deleteMessage(chatId, message.messageId); 
           console.log(`Message ${message.messageId} deleted from ${chatId}`);
