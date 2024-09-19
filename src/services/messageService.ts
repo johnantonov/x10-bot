@@ -91,7 +91,7 @@ export class MessageService {
       
       for (const message of messages) {
         try {
-          console.log(message)
+          console.log(messages)
           if (exclude && message.special === exclude) continue;
           await this.bot.deleteMessage(chatId, message.messageId); 
           console.log(`Message ${message.messageId} deleted from ${chatId}`);
