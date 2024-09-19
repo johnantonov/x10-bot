@@ -165,7 +165,7 @@ export class MessageService {
         const imagePath = getPath(media)
         console.log(imagePath)
         await this.bot.editMessageMedia(
-          { type: 'photo', media: imagePath },
+          { type: 'photo', media: '/usr/src/app/public/messageImages/editProducts.jpg' },
           { chat_id, message_id }
         );
       }
