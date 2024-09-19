@@ -43,10 +43,13 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   }
   
   if (['/start', '/menu'].includes(text)) {
-    MS.getSpecialMsg(chatId, 'menu')
-    MS.delNewDelOld(msgs, chatId, 'menu');
+    const menu = await MS.getSpecialMsg(chatId, 'menu')
+    await MS.delNewDelOld(msgs, chatId, 'menu');
     await RediceService.deleteUserState(chatId)
-    response = await handleStartMenu(true, userMsg, text as '/start' | '/menu');
+    if (menu) {
+      return handleStartMenu(false, userMsg, text as '/start' | '/menu', menu.messageId);
+    }
+    return handleStartMenu(true, userMsg, text as '/start' | '/menu');
   };
 
   const userState = await RediceService.getUserState(chatId);
@@ -67,14 +70,14 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     }
   };
 
-  if (response && response.message_id) {
-    msgs.push({ chatId, messageId: response.message_id })
-  } else {
-    const res = await bot.sendMessage(chatId, 'Я вас не понял. /menu.');
-    msgs.push({ chatId, messageId: res.message_id });
-  }
+  // if (response && response.message_id) {
+  //   msgs.push({ chatId, messageId: response.message_id })
+  // } else {
+  //   const res = await bot.sendMessage(chatId, 'Я вас не понял. /menu.');
+  //   msgs.push({ chatId, messageId: res.message_id });
+  // }
   
-  return MS.addNewAndDelOld(msgs, chatId);
+  // return MS.addNewAndDelOld(msgs, chatId);
 });
 
 console.log('Bot started!');

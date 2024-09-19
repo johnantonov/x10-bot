@@ -14,7 +14,7 @@ const helloNewUserText = `Это телеграм бот для получени
 
 Для начала работы зарегистрируйте вашу систему:`
 
-export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | UserCb, command: '/menu' | '/start') {
+export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | UserCb, command: '/menu' | '/start', specialMsgId?: number ) {
   try {
     const userExists = await users_db.select({ chat_id: msg.chatId });
     const isUser = userExists.rows.length > 0
@@ -23,7 +23,10 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
     const img = command === '/menu' ? 'menu.jpg' : 'hello.jpg'
     
     if (isUser && !isNew && msg.messageId) { // if user already exists
-      return MS.editMessage(msg.chatId, msg.messageId, text, mainOptions(user.type).reply_markup )
+      return MS.editMessage(msg.chatId, 
+        specialMsgId ? specialMsgId : msg.messageId, 
+        text, 
+        mainOptions(user.type).reply_markup )
     } else if (isUser && isNew) { 
       const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
       MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
