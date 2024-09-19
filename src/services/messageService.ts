@@ -1,5 +1,5 @@
+import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
-import TelegramBot, { ChatId } from 'node-telegram-bot-api';
 import { MessageMS } from '../dto/msgData';
 
 export class MessageService {
@@ -90,5 +90,45 @@ export class MessageService {
   async clearMessages(chatId: number) {
     const messageKey = `messages:${chatId}`;
     await this.client.del(messageKey);
+  }
+
+  // universal message editor
+  async editMessage(
+    chatId: ChatId, 
+    messageId: number, 
+    newText?: string, 
+    newReplyMarkup?: InlineKeyboardMarkup, 
+    newMedia?: string // изменяем тип newMedia на string
+  ): Promise<void> {
+    try {
+      if (newText) {
+        await this.bot.editMessageText(newText, {
+          chat_id: chatId,
+          message_id: messageId,
+        } as EditMessageTextOptions);
+        console.log(`Сообщение с ID ${messageId} изменено: текст обновлен`);
+      }
+  
+      if (newReplyMarkup) {
+        await this.bot.editMessageReplyMarkup(newReplyMarkup, {
+          chat_id: chatId,
+          message_id: messageId,
+        });
+        console.log(`Сообщение с ID ${messageId} изменено: клавиатура обновлена`);
+      }
+  
+      if (newMedia) {
+        await this.bot.editMessageMedia({
+          type: 'photo',  
+          media: newMedia,
+        }, {
+          chat_id: chatId,
+          message_id: messageId,
+        });
+        console.log(`Сообщение с ID ${messageId} изменено: фото обновлено`);
+      }
+    } catch (error) {
+      console.error(`Ошибка при изменении сообщения с ID ${messageId}:`, error);
+    }
   }
 }
