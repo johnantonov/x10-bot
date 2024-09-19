@@ -23,7 +23,9 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     if (cb === cbs.menuAndEdit) {
       await handleStartMenu(false, userCb, '/menu');
     } else {
-      await handleStartMenu(true, userCb, '/menu');
+      const response = await handleStartMenu(true, userCb, '/menu');
+      if (response) await MS.saveMessage({ chatId, messageId: response.message_id, special: 'menu'});
+      
     }
   }
 
