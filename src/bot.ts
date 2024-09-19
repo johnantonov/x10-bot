@@ -65,7 +65,6 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     } else {
       await bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
       await RediceService.deleteUserState(chatId)
-      await MS.delNewDelOld(msgs, chatId, 'menu');
     }
   };
 
