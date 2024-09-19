@@ -50,7 +50,7 @@ export const cbs = {
   goPrem: 'go_prem',
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
-  connectionBtn: 'connectionBtn',
+  connectionBtn: 'con',
   myConnections: 'my_connections',
   newConnection: 'new_connection',
   getReportNow: 'getReportNow_',
@@ -141,7 +141,7 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
       main: cbs.connectionBtn,
       ss: conection.ss,
       status: conection.status,
-      action: ""
+      act: ""
     }
 
     console.log(JSON.stringify(data))
