@@ -98,7 +98,7 @@ export class MessageService {
     messageId: number, 
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
-    newMedia?: string // изменяем тип newMedia на string
+    newMedia?: string 
   ): Promise<void> {
     try {
       if (newText) {
