@@ -49,7 +49,7 @@ export const cbs = {
   goPrem: 'go_prem',
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
-  connectionBtn: 'connectionBtn_',
+  connectionBtn: 'connectionBtn______',
   myConnections: 'my_connections',
   newConnection: 'new_connection',
   getReportNow: 'getReportNow_',
@@ -134,7 +134,7 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   connections.forEach((conection, i) => {
     connectionButtons[0].push({ 
       text: `${conection.title ? conection.title : conection.ss}`, 
-      callback_data: `connectionBtn_____${conection.ss}_____${conection.status}_____`, 
+      callback_data: `${cbs.connectionBtn}${conection.ss}______${conection.status}______1`, 
     })
   })
 
