@@ -102,13 +102,15 @@ const startOptions = new Options([
 ])
 
 export const connectionOptions = (connection: string) => {
-  return new Options([
+  const connectionBtns = new Options([
     [buttons.getReportNow(connection)],
     [buttons.editReportProducts(connection)],
     [buttons.changeTime(connection)],
     [buttons.editReportName(connection)],
     [buttons.offTable(connection)],
   ])
+
+  return connectionBtns;
 }
 
 export const yesNo = (cbPart: string) => {

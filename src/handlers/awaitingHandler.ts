@@ -37,6 +37,8 @@ export async function awaitingHandler(data: UserMsg, state: string) {
       if (state === rStates.waitPremPass) {
         await users_db.updateType(data.chatId, data.text);
         return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' });
+      } else if (state === rStates.waitNewConnection) {
+        return new AwaitingAnswer({ result: true, text: "Вы успешно подключили еще одну систему.", type: 'old' });
       }
   
       return handleError("Возникла ошибка, попробуйте еще раз.");

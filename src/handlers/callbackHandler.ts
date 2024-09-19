@@ -49,8 +49,9 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb.startsWith(cbs.connectionBtn)) {
-    const ss = cb.split('_')
-    await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(ss+chatId).reply_markup);
+    const newCb = cb.split('_')+chatId
+    console.log(ss)
+    await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(newCb).reply_markup);
   }
 
   if (cb === cbs.getAllReportsNow) {
