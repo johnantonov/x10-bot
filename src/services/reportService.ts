@@ -101,10 +101,12 @@ export class ReportService {
   // Send SS values to Google Web App and receive report data
   async getReportsFromWebApp(ssList: string[]): Promise<Record<string, string>> {
     try {
+      console.log('webapp', ssList)
       const response = await axios.post(process.env.SS_REPORTS_GETTER_URL!, {
         ssList: ssList,
         date: getYesterdayDate(),
       });
+      console.log('webapp res', response.data)
       return response.data;
     } catch (error) {
       console.error('Error fetching reports from Web App:', error);
@@ -112,10 +114,10 @@ export class ReportService {
     }
   }
 
-  async processReportForUser(user: User, reportData: any) {
-    if (user.type === 'registered' && user.ss) {
-        if (reportData[user.ss]) {
-          const message_id = await this.sendPhoto(user.chat_id, reportData[user.ss][0][3], reportData[user.ss][0][2], returnMenu(false).reply_markup)
+  async processReportForUser(user: User, reportData) {
+    if (user.type === 'registered') {
+        if (reportData[ss]) {
+          const message_id = await this.sendPhoto(user.chat_id, reportData[data], reportData[data], returnMenu(false).reply_markup)
           return message_id
         }
     } 
@@ -153,7 +155,9 @@ export class ReportService {
         console.log(ssList)
         const reportData = await this.getReportsFromWebApp(ssList);
         for (const report of Object.keys(reportData)) {
-          await this.processReportForUser(user, reportData[report])
+          console.log('processReportForUser', report)
+          console.log('processReportForUser', reportData[report])
+          await this.processReportForUser(user, { report: reportData[report] })
         }
       }
     } catch (error) {
