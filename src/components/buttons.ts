@@ -49,6 +49,7 @@ export const cbs = {
   goPrem: 'go_prem',
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
+  connectionBtn: 'connectionBtn_',
   myConnections: 'my_connections',
   newConnection: 'new_connection',
   getReportNow: 'getReportNow_',

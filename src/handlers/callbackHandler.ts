@@ -44,7 +44,13 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb === cbs.newConnection) {
-    
+    await RS.setUserState(chatId, rStates.waitNewConnection, ttls.usual)
+    await MS.editMessage(chatId, messageId, '🔑 Введите пароль от подключения', returnMenu(true).reply_markup);
+  }
+
+  if (cb.startsWith(cbs.connectionBtn)) {
+    const ss = cb.split('_')
+    await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(ss+chatId).reply_markup);
   }
 
   if (cb === cbs.getAllReportsNow) {
