@@ -1,8 +1,12 @@
 import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
-import { sendImageWithText } from '../components/answers';
+import { resolve } from 'path';
 import { getPath } from '../utils/text';
+import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export class MessageService {
   private bot: TelegramBot;
@@ -132,21 +136,20 @@ export class MessageService {
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
     media?: string,
-  ) {
+  ): Promise<void> {
     
 
     try {
-      if (media) {
-        const imagePath = getPath(media)
-        if (process.env.TELEGRAM_TOKEN) {
-          await editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN)
-          // await this.bot.deleteMessage(chat_id, message_id)
-          // return sendImageWithText(this.bot, +chat_id, media, newText, { reply_markup: newReplyMarkup })
-        }
-      }
+      // if (newText && !media) {
+      //   await this.bot.editMessageText(newText, {
+      //     chat_id: chatId,
+      //     message_id: messageId,
+      //     parse_mode: 'HTML',
+      //   } as EditMessageTextOptions);
+      // }
 
       if (newText) {
-        await this.bot.editMessageText(newText, {
+        await this.bot.editMessageCaption(newText, {
           chat_id,
           message_id,
           parse_mode: 'HTML',
@@ -160,15 +163,19 @@ export class MessageService {
         });
       }
   
+      if (media) {
+        const imagePath = getPath(media)
+        console.log(imagePath)
+        await editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!)
+      }
     } catch (error) {
       console.error(`Error editing msg, ID: ${message_id} - `, error);
     }
   }
 }
 
-const axios = require('axios');
-const fs = require('fs');
-const FormData = require('form-data');
+import fs from 'fs';
+import FormData from 'form-data';
 
 async function editMessageMedia(chat_id: number | string, message_id: number, mediaPath: string, botToken: string) {
   try {
@@ -184,7 +191,6 @@ async function editMessageMedia(chat_id: number | string, message_id: number, me
     form.append('chat_id', chat_id);
     form.append('message_id', message_id);
 
-
     const response = await axios.post(
       `https://api.telegram.org/bot${botToken}/editMessageMedia`,
       form,
@@ -195,8 +201,9 @@ async function editMessageMedia(chat_id: number | string, message_id: number, me
       }
     );
 
-    console.log('Media edited successfully:', response.data);
+    return response
   } catch (error) {
     console.error('Error editing media:', error);
+    return null
   }
 }
