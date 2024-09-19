@@ -75,7 +75,7 @@ export class MessageService {
    * get one special msg
    */ 
   async getSpecialMsg(chatId: number, special: string) {
-    const msgs = await this.getMessages(chatId)
+    const msgs = (await this.getMessages(chatId)).reverse();
     return msgs.filter(msg => msg.special === special)[0]
   }
 

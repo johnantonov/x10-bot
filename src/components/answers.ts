@@ -5,7 +5,7 @@ import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
 import { bot, MS } from "../bot";
-import { getPath, helloNewUserText } from "../utils/text";
+import { getPath } from "../utils/text";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
@@ -16,14 +16,14 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
     const userExists = await users_db.select({ chat_id: msg.chatId });
     const isUser = userExists.rows.length > 0
     const user = userExists.rows[0]
-    const text = command === '/menu' ? ' ' : helloNewUserText
+    const text = command === '/menu' ? ' ' : `Это телеграм бот для получения ежедневных отчетов по вашему кабинету из Системы 10X.\n\nДля начала работы зарегистрируйте вашу систему:`
     const img = command === '/menu' ? 'menu.jpg' : 'hello.jpg'
     
     if (isUser && !isNew && msg.messageId) { // if user already exists
       return MS.editMessage(msg.chatId, 
         specialMsgId ? specialMsgId : msg.messageId, 
-        text, 
-        mainOptions(user.type).reply_markup )
+        text,
+        mainOptions(user.type).reply_markup, img )
     } else if (isUser && isNew) { 
       const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
       await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
