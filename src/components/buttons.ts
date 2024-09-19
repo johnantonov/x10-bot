@@ -50,6 +50,7 @@ export const cbs = {
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
   myConnections: 'my_connections',
+  newConnection: 'new_connection',
   getReportNow: 'getReportNow_',
   changeTime: 'changeTime_',
   editReportProducts: 'editReportProducts_',
@@ -68,6 +69,7 @@ export const buttons = {
   offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable + connection } },
   getAllReportsNow: { text: '📂 Сформировать отчеты сейчас', callback_data: cbs.getAllReportsNow } ,
   myConnections: { text: '📊 Подключения', callback_data: cbs.myConnections } ,
+  newConnection: { text: '➕ Новое подключение', callback_data: cbs.newConnection } ,
   loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
   setOldUserType: { text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType },
 }
@@ -131,6 +133,8 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   connections.forEach((connect, i) => {
     connectionButtons[0].push({ text: `${connect.title ? connect.title : connect.ss}`, callback_data: `connectionBtn_${connect.ss}` })
   })
+
+  connectionButtons.push([buttons.newConnection, buttons.menuAndEdit])
 
   return connectionButtons;
 }
