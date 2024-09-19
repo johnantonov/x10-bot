@@ -37,6 +37,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb === cbs.myConnections) {
     const buttons = await generateConnectionsButtons(chatId)
+    console.log('inline_keyboard:', buttons)
     await MS.editMessage(chatId, messageId, 
       'Выберите подключение:', 
       { inline_keyboard: buttons })

@@ -50,7 +50,7 @@ export const cbs = {
   goPrem: 'go_prem',
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
-  connectionBtn: 'connectionBtnSPLIT',
+  connectionBtn: 'connectionBtn',
   myConnections: 'my_connections',
   newConnection: 'new_connection',
   getReportNow: 'getReportNow_',
@@ -132,6 +132,8 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   const conectionsPerPage = 12
   const pages = Math.round(connections.length / conectionsPerPage)
 
+  console.log(connections)
+
   connections.forEach((conection, i) => {
     console.log(chat_id)
 
@@ -142,7 +144,7 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
       action: ""
     }
 
-    console.log(data)
+    console.log(JSON.stringify(data))
     
     connectionButtons[0].push({ 
       text: `${conection.title ? conection.title : conection.ss}`, 
@@ -150,7 +152,9 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
     })
   })
 
+  console.log(1)
   connectionButtons.push([buttons.newConnection, buttons.menuAndEdit])
+  console.log(2)
 
   return connectionButtons;
 }
