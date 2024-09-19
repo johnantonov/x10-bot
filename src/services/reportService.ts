@@ -114,10 +114,10 @@ export class ReportService {
     }
   }
 
-  async processReportForUser(user: User, reportData) {
+  async processReportForUser(user: User, reportData: any) {
     if (user.type === 'registered') {
-        if (reportData[ss]) {
-          const message_id = await this.sendPhoto(user.chat_id, reportData[data], reportData[data], returnMenu(false).reply_markup)
+        if (reportData.ss) {
+          const message_id = await this.sendPhoto(user.chat_id, reportData.ss, reportData.ss, returnMenu(false).reply_markup)
           return message_id
         }
     } 
@@ -154,10 +154,10 @@ export class ReportService {
         const ssList = rows.map(row => row.ss)
         console.log(ssList)
         const reportData = await this.getReportsFromWebApp(ssList);
-        for (const report of Object.keys(reportData)) {
-          console.log('processReportForUser', report)
-          console.log('processReportForUser', reportData[report])
-          await this.processReportForUser(user, { report: reportData[report] })
+        for (const ss of Object.keys(reportData)) {
+          console.log('processReportForUser', ss)
+          console.log('processReportForUser', reportData[ss])
+          await this.processReportForUser(user, { ss: reportData[ss] })
         }
       }
     } catch (error) {
