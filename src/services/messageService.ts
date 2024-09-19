@@ -58,6 +58,7 @@ export class MessageService {
    * delete all current msgs and new msgs without saving
    */ 
   async delNewDelOld(msgs: MessageMS[], chatId: number, exclude?: string) {
+    console.log(exclude)
     await this.deleteAllMessages(chatId, exclude)
     for (const msg of msgs) {
       await this.bot.deleteMessage(chatId, msg.messageId); 
@@ -90,6 +91,7 @@ export class MessageService {
       
       for (const message of messages) {
         try {
+          console.log(message)
           if (exclude && message.special === exclude) continue;
           await this.bot.deleteMessage(chatId, message.messageId); 
           console.log(`Message ${message.messageId} deleted from ${chatId}`);
