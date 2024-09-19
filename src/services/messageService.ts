@@ -136,17 +136,14 @@ export class MessageService {
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
     media?: string,
-  ): Promise<void> {
+  ) {
     
-
     try {
-      // if (newText && !media) {
-      //   await this.bot.editMessageText(newText, {
-      //     chat_id: chatId,
-      //     message_id: messageId,
-      //     parse_mode: 'HTML',
-      //   } as EditMessageTextOptions);
-      // }
+      if (media) {
+        const imagePath = getPath(media);
+        console.log(imagePath);
+        return editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!, newText, newReplyMarkup);
+      }
 
       if (newText) {
         await this.bot.editMessageCaption(newText, {
@@ -177,19 +174,34 @@ export class MessageService {
 import fs from 'fs';
 import FormData from 'form-data';
 
-async function editMessageMedia(chat_id: number | string, message_id: number, mediaPath: string, botToken: string) {
+async function editMessageMedia(  
+  chat_id: number | string, 
+  message_id: number, 
+  mediaPath: string, 
+  botToken: string,
+  caption?: string, 
+  replyMarkup?: InlineKeyboardMarkup, 
+) {
   try {
     const form = new FormData();
-    
+
+    // Формируем запрос с медиа
     form.append('media', JSON.stringify({
       type: 'photo',
-      media: 'attach://photo'
+      media: 'attach://photo',
+      caption: caption || "", 
+      parse_mode: 'HTML' 
     }));
-    
+
     form.append('photo', fs.createReadStream(mediaPath));
 
     form.append('chat_id', chat_id);
     form.append('message_id', message_id);
+
+    // Добавляем клавиатуру, если она передана
+    if (replyMarkup) {
+      form.append('reply_markup', JSON.stringify(replyMarkup));
+    }
 
     const response = await axios.post(
       `https://api.telegram.org/bot${botToken}/editMessageMedia`,
@@ -201,9 +213,9 @@ async function editMessageMedia(chat_id: number | string, message_id: number, me
       }
     );
 
-    return response
+    return response;
   } catch (error) {
     console.error('Error editing media:', error);
-    return null
+    return null;
   }
 }
