@@ -12,7 +12,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   const userCb = new UserCb(query);
   const { chatId, cb, messageId } = userCb;
   const msgs: MessageMS[] = []
-  const editMsgs: MessageMS[] = [];
+  let response: MessageMS;
 
   if (!messageId) {
     return
@@ -23,7 +23,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     if (cb === cbs.menuAndEdit) {
       await handleStartMenu(false, userCb, '/menu');
     } else {
-      const response = await handleStartMenu(true, userCb, '/menu');
+      await handleStartMenu(true, userCb, '/menu');
     }
   }
 
@@ -31,6 +31,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
+    await MS.saveMessage({ chatId, messageId })
   };
 
   if (cb.startsWith(cbs.onTable)) {
