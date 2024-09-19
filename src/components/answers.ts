@@ -1,12 +1,10 @@
-import TelegramBot, { ChatId } from "node-telegram-bot-api";
+import TelegramBot, { ChatId, Message } from "node-telegram-bot-api";
 import { resolve } from 'path';
 import { SendMessageOptions } from 'node-telegram-bot-api';
 import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
-import { MessageService } from "../services/messageService";
-import { redis } from "../redis";
-import { bot, MS, RediceService } from "../bot";
+import { bot, MS } from "../bot";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
@@ -27,11 +25,13 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
     if (isUser && !isNew && msg.messageId) { // if user already exists
       return MS.editMessage(msg.chatId, msg.messageId, text, mainOptions(user.type).reply_markup )
     } else if (isUser && isNew) { 
-      return sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
+      const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
+      MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     } else {
       await users_db.insert({ chat_id: msg.chatId, username: msg.username, notification_time: 19, });
       console.log('insert new user into db: '+msg.chatId+" "+msg.username)
-      return sendImageWithText(bot, msg.chatId, img, text, mainOptions());
+      const newMenu = await  sendImageWithText(bot, msg.chatId, img, text, mainOptions());
+      MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     }
   } catch (error) {
     console.error('error while processing the /start command', error);
@@ -45,7 +45,7 @@ export function sendImageWithText(
   imageName: string,
   caption?: string,
   options?: SendMessageOptions
-): Promise<any> {
+): Promise<Message> {
   const imagePath = resolve(__dirname, `../../../public/messageImages/${imageName}`);
   return bot.sendPhoto(chatId, imagePath, { caption, ...options });
 }
