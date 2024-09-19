@@ -103,7 +103,7 @@ const startOptions = new Options([
   [buttons.setOldUserType],
 ])
 
-export const connectionOptions = (connection: string, status: string) => {
+export const connectionOptions = (connection: string, status: string, waitReport?: boolean) => {
     const connectionBtns = [
     [buttons.getReportNow(connection)],
     [buttons.editReportProducts(connection)],
@@ -115,6 +115,10 @@ export const connectionOptions = (connection: string, status: string) => {
     connectionBtns.push([buttons.offTable(connection)])
   } else {
     connectionBtns.push([buttons.offConnection(connection)])
+  }
+
+  if (waitReport) {
+    connectionBtns[0] = [buttons.loading]
   }
 
   return new Options(connectionBtns);

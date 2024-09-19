@@ -55,9 +55,9 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb.startsWith(cbs.getReportNow)) {
-    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
     const data = parseConnectionData(cb);
     const newCb = newConnectionData(data) 
+    await bot.editMessageReplyMarkup(connectionOptions(newCb, data.sts, true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId, 'single', data.ss)
     if (!reportMessageId) {
       await MS.editMessage(chatId, messageId, 

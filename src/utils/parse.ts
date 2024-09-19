@@ -16,5 +16,5 @@ export const parseConnectionData = (data: string): ConnectionCallbackData => {
 }
 
 export const newConnectionData = (data: ConnectionCallbackData): string => {
-  return data.ss + "?" + data.sts + "?" + data.an
+  return data.ss + "?" + data.sts
 }
