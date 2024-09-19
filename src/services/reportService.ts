@@ -142,9 +142,10 @@ export class ReportService {
 
   async runForUser(user: User, type: 'single' | 'all', ss?: string) {
     try {
-      console.log(type)
+      console.log(user, type, ss)
       if (type === 'single' && ss) {
         const reportData = await this.getReportsFromWebApp([ss]);
+        console.log(reportData)
         await this.processReportForUser(user, reportData)
       } else {
 
