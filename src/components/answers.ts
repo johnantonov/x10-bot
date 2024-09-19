@@ -9,11 +9,15 @@ export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
 }
 
+const helloNewUserText = `Это телеграм бот для получения ежедневных отчетов по вашему кабинету из Системы 10X.
+
+Для начала работы зарегистрируйте вашу систему:`
+
 export async function handleStartMenu(bot: TelegramBot, msg: UserMsg | UserCb, command: '/menu' | '/start') {
   try {
     const userExists = await users_db.select({ chat_id: msg.chatId });
     const user = userExists.rows[0]
-    const text = command === '/menu' ? ' ' : 'Привет!'
+    const text = command === '/menu' ? ' ' : helloNewUserText
     const img = command === '/menu' ? 'menu.jpg' : 'hello.jpg'
     
     if (userExists.rows.length > 0) { // if user already exists

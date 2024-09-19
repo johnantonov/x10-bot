@@ -56,8 +56,8 @@ export const buttons = {
   yesReadyToFollow: { text: '✅ Да. Отслеживать новый артикул', callback_data: cbs.yesFollow },
   changeTimeToReport: { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime },
   returnMain: { text: '🔙 Вернуться в главное меню', callback_data: cbs.returnMain },
-  onTable: { text: '📂 Подключить отчет из Google Sheets', callback_data: cbs.onTable },
-  offTable: { text: '❌ Отключить отчет из Google Sheets', callback_data: cbs.offTable },
+  onTable: { text: '📂 Подключить телеграм отчет', callback_data: cbs.onTable },
+  offTable: { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
   menuAndClean: { text: '↩️ Меню', callback_data: cbs.menuAndClean },
   settingsArticleReport: { text: '⚙️ Настроить отчет', callback_data: cbs.settingsArt },
@@ -119,7 +119,7 @@ export const yesNo = (cbPart: string) => {
 }
 
 const startOptions = new Options([
-  [{ text: '👑 Зарегистрироваться', callback_data: cbs.setOldUserType }],
+  [{ text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType }],
 ])
 
 export function generateReportTimeButtons(rep: string, page: number = 0): TelegramBot.InlineKeyboardButton[][] {

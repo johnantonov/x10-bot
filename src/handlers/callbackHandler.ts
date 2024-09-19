@@ -27,7 +27,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 //*********************** SHEETS ***********************//
   if (cb === cbs.setOldUserType || cb === cbs.goPrem) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
-    const response = await bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', new Options([[buttons.menu]]));
+    const response = await bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', returnMenu(true));
     msgs.push({chatId, messageId: response.message_id, content: 'await_pass'})
     return MS.saveMessages(msgs)
   };
@@ -98,7 +98,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 // *********** REPORT TIME *************
   if (cb.startsWith(cbs.changeTime)) {
     if (cb === cbs.changeTime) {
-      const response = await bot.sendMessage(chatId, 'Выберите время, когда вам будет удобно получать отчет:', {
+      const response = await bot.sendMessage(chatId, 'Выберите время по МСК, когда вам будет удобно получать отчет:', {
         reply_markup: {
           inline_keyboard: generateReportTimeButtons(cbs.changeTime)
         }
