@@ -64,11 +64,15 @@ export class MessageService {
    * delete all current msgs and new msgs without saving
    */ 
   async delNewDelOld(msgs: MessageMS[], chatId: number, exclude?: string) {
-    console.log(exclude)
-    await this.deleteAllMessages(chatId, exclude)
-    for (const msg of msgs) {
-      await this.bot.deleteMessage(chatId, msg.messageId); 
-    }
+    await this.deleteAllMessages(chatId, exclude);
+    const deletePromises = msgs.map(async (msg) => {
+      try {
+        await this.bot.deleteMessage(chatId, msg.messageId);
+      } catch (error) {
+        console.error(`Error during delete message ${msg.messageId}:`, error);
+      }
+    });
+    await Promise.all(deletePromises);
   }
 
     /**
@@ -88,36 +92,32 @@ export class MessageService {
     return messages.map(message => JSON.parse(message));
   }
 
-  /**
-   * delete all msgs from chat
-   */
-  async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
-    try {
-      const messages = (await this.getMessages(chatId)).reverse();
-      
-      let specialFound = false
-      
-      for (const message of messages) {
-        try {
-          console.log(messages)
-          if (exclude && message.special === exclude && !specialFound) {
-            specialFound = true;
-            continue;
-          };
-          await this.bot.deleteMessage(chatId, message.messageId); 
-          console.log(`Message ${message.messageId} deleted from ${chatId}`);
-        } catch (error) {
-          console.error(`Error during delete message ${message.messageId}:`, error);
+/**
+ * delete all msgs from chat
+ */
+async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
+  try {
+    const messages = (await this.getMessages(chatId)).reverse();
+    
+    let specialFound = false;
+    
+    const deletePromises = messages.map(async (message) => {
+      try {
+        if (exclude && message.special === exclude && !specialFound) {
+          specialFound = true;
+          return; 
         }
+        await this.bot.deleteMessage(chatId, message.messageId);;
+      } catch (error) {
+        console.error(`Error during delete message ${message.messageId}:`, error);
       }
-      
-      this.clearMessages(chatId) 
-      console.log(`All msgs deleted from chat, user: ${chatId}`);
-      
-    } catch (error) {
-      console.error(`Error during delete all msgs from chat, user: ${chatId} -`, error);
-    }
+    });
+    await Promise.all(deletePromises);
+    this.clearMessages(chatId);
+  } catch (error) {
+    console.error(`Error during delete all msgs from chat, user: ${chatId} -`, error);
   }
+}
 
   /**
    * delete all msgs from storage
