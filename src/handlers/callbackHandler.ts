@@ -56,7 +56,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
         'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
         mainOptions('old_ss').reply_markup)
     } 
-    await MS.addNewAndDelOld(msgs, chatId);
+    await MS.delNewDelOld(msgs, chatId);
   }
 
   if (cb === cbs.editReportProducts) {
