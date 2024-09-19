@@ -29,12 +29,12 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
         mainOptions(user.type).reply_markup )
     } else if (isUser && isNew) { 
       const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
-      MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
+      await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     } else {
       await users_db.insert({ chat_id: msg.chatId, username: msg.username, notification_time: 19, });
       console.log('insert new user into db: '+msg.chatId+" "+msg.username)
       const newMenu = await  sendImageWithText(bot, msg.chatId, img, text, mainOptions());
-      MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
+      await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     }
   } catch (error) {
     console.error('error while processing the /start command', error);
