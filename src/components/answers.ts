@@ -48,5 +48,5 @@ export function sendImageWithText(
 ): Promise<Message> {
   const imagePath = getPath(imageName);
   console.log(imagePath)
-  return bot.sendPhoto(chatId, imagePath, { caption, ...options });
+  return bot.sendPhoto(chatId, imagePath, { caption, ...options, parse_mode: 'HTML' });
 }

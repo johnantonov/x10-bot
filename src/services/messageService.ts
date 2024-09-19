@@ -2,6 +2,7 @@ import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } fro
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
 import { sendImageWithText } from '../components/answers';
+import { getPath } from '../utils/text';
 
 export class MessageService {
   private bot: TelegramBot;
@@ -136,8 +137,12 @@ export class MessageService {
 
     try {
       if (media) {
-        await this.bot.deleteMessage(chat_id, message_id)
-        return sendImageWithText(this.bot, +chat_id, media, newText, { reply_markup: newReplyMarkup })
+        const imagePath = getPath(media)
+        if (process.env.TELEGRAM_TOKEN) {
+          await editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN)
+          // await this.bot.deleteMessage(chat_id, message_id)
+          // return sendImageWithText(this.bot, +chat_id, media, newText, { reply_markup: newReplyMarkup })
+        }
       }
 
       if (newText) {
@@ -158,5 +163,40 @@ export class MessageService {
     } catch (error) {
       console.error(`Error editing msg, ID: ${message_id} - `, error);
     }
+  }
+}
+
+const axios = require('axios');
+const fs = require('fs');
+const FormData = require('form-data');
+
+async function editMessageMedia(chat_id: number | string, message_id: number, mediaPath: string, botToken: string) {
+  try {
+    const form = new FormData();
+    
+    form.append('media', JSON.stringify({
+      type: 'photo',
+      media: 'attach://photo'
+    }));
+    
+    form.append('photo', fs.createReadStream(mediaPath));
+
+    form.append('chat_id', chat_id);
+    form.append('message_id', message_id);
+
+
+    const response = await axios.post(
+      `https://api.telegram.org/bot${botToken}/editMessageMedia`,
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+        },
+      }
+    );
+
+    console.log('Media edited successfully:', response.data);
+  } catch (error) {
+    console.error('Error editing media:', error);
   }
 }
