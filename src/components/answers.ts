@@ -4,6 +4,9 @@ import { SendMessageOptions } from 'node-telegram-bot-api';
 import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
+import { MessageService } from "../services/messageService";
+import { redis } from "../redis";
+import { bot, MS, RediceService } from "../bot";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
@@ -13,14 +16,17 @@ const helloNewUserText = `Это телеграм бот для получени
 
 Для начала работы зарегистрируйте вашу систему:`
 
-export async function handleStartMenu(bot: TelegramBot, msg: UserMsg | UserCb, command: '/menu' | '/start') {
+export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | UserCb, command: '/menu' | '/start') {
   try {
     const userExists = await users_db.select({ chat_id: msg.chatId });
+    const isUser = userExists.rows.length > 0
     const user = userExists.rows[0]
     const text = command === '/menu' ? ' ' : helloNewUserText
     const img = command === '/menu' ? 'menu.jpg' : 'hello.jpg'
     
-    if (userExists.rows.length > 0) { // if user already exists
+    if (isUser && !isNew && msg.messageId) { // if user already exists
+      return MS.editMessage(msg.chatId, msg.messageId, text, mainOptions(user.type).reply_markup )
+    } else if (isUser && isNew) { 
       return sendImageWithText(bot, msg.chatId, img, text, mainOptions(user.type));
     } else {
       await users_db.insert({ chat_id: msg.chatId, username: msg.username, notification_time: 19, });

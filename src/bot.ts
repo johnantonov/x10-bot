@@ -16,15 +16,15 @@ if (!token) {
   throw new Error('Token not found');
 };
 
-const bot = new TelegramBot(token, { polling: true });
+export const bot = new TelegramBot(token, { polling: true });
 export const RediceService = new redis();
-const messageService = new MessageService(bot, RediceService.getClient());
+export const MS = new MessageService(bot, RediceService.getClient());
 
 setBotCommands(bot)
 
 bot.on('callback_query', async (query: TelegramBot.CallbackQuery) => {
   if (!query.message?.chat.id) return
-  return callbackHandler(query, bot, RediceService, messageService);
+  return callbackHandler(query, bot, RediceService, MS);
 });
 
 bot.on('message', async (msg: TelegramBot.Message) => { 
@@ -44,7 +44,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   
   if (['/start', '/menu'].includes(text)) {
     await RediceService.deleteUserState(chatId)
-    response = await handleStartMenu(bot, userMsg, text as '/start' | '/menu');
+    response = await handleStartMenu(false, userMsg, text as '/start' | '/menu');
   };
 
   const userState = await RediceService.getUserState(chatId);
@@ -55,7 +55,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     msgs.push({ chatId, messageId: response.message_id })
 
     if (!answer.result) {
-      await messageService.saveMessages(msgs);
+      await MS.saveMessages(msgs);
       return bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
     } else {
       await bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
@@ -72,7 +72,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     msgs.push({ chatId, messageId: res.message_id });
   }
   
-  return messageService.addNewAndDelOld(msgs, chatId);
+  return MS.addNewAndDelOld(msgs, chatId);
 });
 
 console.log('Bot started!');

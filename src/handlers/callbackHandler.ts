@@ -20,22 +20,20 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
-    const response = await handleStartMenu(bot, userCb, '/menu');
-    msgs.push({ chatId, messageId: response.message_id })
-    if (cb === cbs.menuAndClean) {
-      await MS.addNewAndDelOld(msgs, chatId)
-    } else {
-      await MS.saveMessages(msgs)
-    }
+    const response = await handleStartMenu(false, userCb, '/menu');
+    // MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup)
+    // msgs.push({ chatId, messageId: response.message_id })
+    // if (cb === cbs.menuAndClean) {
+    //   await MS.addNewAndDelOld(msgs, chatId)
+    // } else {
+    //   await MS.saveMessages(msgs)
+    // }
   }
 
 //*********************** SHEETS ***********************//
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
-    // const response = await bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', returnMenu(true));
     MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup)
-    // msgs.push({chatId, messageId: response.message_id, content: 'await_pass'})
-    // return MS.saveMessages(msgs)
   };
 
   if (cb.startsWith(cbs.onTable)) {
@@ -93,7 +91,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
         await users_db.updateType(chatId, '', 'old');
         response = await sendImageWithText(bot, chatId, 'success.png' , 'Вы успешно отключили ежедневную рассылку', mainOptions('old'));
       } else {
-        response = await handleStartMenu(bot, userCb, '/menu');
+        response = await handleStartMenu(false, userCb, '/menu');
       }
 
       msgs.push({ chatId, messageId: response.message_id });
