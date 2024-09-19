@@ -127,8 +127,8 @@ export class MessageService {
    * universal message editor
    */
   async editMessage(
-    chatId: ChatId, 
-    messageId: number, 
+    chat_id: ChatId, 
+    message_id: number, 
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
     media?: string,
@@ -146,33 +146,31 @@ export class MessageService {
 
       if (newText) {
         await this.bot.editMessageCaption(newText, {
-          chat_id: chatId,
-          message_id: messageId,
+          chat_id,
+          message_id,
           parse_mode: 'HTML',
         } as EditMessageTextOptions);
       }
   
       if (newReplyMarkup) {
         await this.bot.editMessageReplyMarkup(newReplyMarkup, {
-          chat_id: chatId,
-          message_id: messageId,
+          chat_id,
+          message_id,
         });
       }
   
       if (media) {
         // /usr/src/app/public/messageImages/menu.jpg
+        // /usr/src/app/public/messageImages/editProducts.jpg
         const imagePath = getPath(media)
         console.log(imagePath)
-        await this.bot.editMessageMedia({
-          type: 'photo',  
-          media: imagePath,
-        }, {
-          chat_id: chatId,
-          message_id: messageId,
-        });
+        await this.bot.editMessageMedia(
+          { type: 'photo', media: imagePath },
+          { chat_id, message_id }
+        );
       }
     } catch (error) {
-      console.error(`Error editing msg, ID: ${messageId} - `, error);
+      console.error(`Error editing msg, ID: ${message_id} - `, error);
     }
   }
 }
