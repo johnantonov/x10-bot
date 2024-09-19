@@ -134,7 +134,7 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   connections.forEach((conection, i) => {
     connectionButtons[0].push({ 
       text: `${conection.title ? conection.title : conection.ss}`, 
-      callback_data: `connectionBtn|${conection.ss}|${conection.status}|`, 
+      callback_data: `connectionBtn_____${conection.ss}_____${conection.status}_____`, 
     })
   })
 

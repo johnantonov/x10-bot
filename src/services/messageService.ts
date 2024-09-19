@@ -141,7 +141,6 @@ async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
     try {
       if (media) {
         const imagePath = getPath(media);
-        console.log(imagePath);
         return editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!, newText, newReplyMarkup);
       }
 
@@ -158,12 +157,6 @@ async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
           chat_id,
           message_id,
         });
-      }
-  
-      if (media) {
-        const imagePath = getPath(media)
-        console.log(imagePath)
-        await editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!)
       }
     } catch (error) {
       console.error(`Error editing msg, ID: ${message_id} - `, error);
