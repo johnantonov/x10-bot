@@ -1,12 +1,16 @@
+import { format, subDays } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+
 export function getYesterdayDate() {
-  let yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1); 
+  const timeZone = 'Europe/Moscow'; 
 
-  let year = yesterday.getFullYear();
-  let month = ('0' + (yesterday.getMonth() + 1)).slice(-2); 
-  let day = ('0' + yesterday.getDate()).slice(-2); 
+  const now = new Date();
+  const moscowTime = toZonedTime(now, timeZone); 
+  const yesterday = subDays(moscowTime, 1);
 
-  return `${year}-${month}-${day}`; 
+  const formattedDate = format(yesterday, 'yyyy-MM-dd'); 
+
+  return formattedDate;
 }
 
 export function create30DaysObject() {
