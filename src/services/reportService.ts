@@ -147,10 +147,14 @@ export class ReportService {
       console.log(user, type, ss)
       if (type === 'single' && ss) {
         const reportData = await this.getReportsFromWebApp([ss]);
-        console.log(reportData)
         await this.processReportForUser(user, reportData)
       } else {
-
+        const rows = await users_db.getConnections(user.chat_id) 
+        const ssList = rows.map(row => row.ss)
+        const reportData = await this.getReportsFromWebApp(ssList);
+        for (const report of Object.keys(reportData)) {
+          await this.processReportForUser(user, reportData[report])
+        }
       }
     } catch (error) {
       console.error('Error running report for user:', error);
