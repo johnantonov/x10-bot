@@ -31,7 +31,8 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 //*********************** SHEETS ***********************//
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
-    MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup)
+    MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
+    MS.saveMessage({ chatId, messageId, special: 'menu'})
   };
 
   if (cb.startsWith(cbs.onTable)) {
