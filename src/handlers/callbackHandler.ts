@@ -1,13 +1,12 @@
 import TelegramBot from "node-telegram-bot-api";
 import { MessageMS, UserCb } from "../dto/msgData";
-import { buttons, cbs, generateReportTimeButtons, mainOptions, Options, returnMenu, settingsArtOptions, yesNo } from "../components/buttons";
+import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo } from "../components/buttons";
 import { redis, rStates, ttls } from "../redis";
 import { users_db } from "../../database/models/users";
-import { handleStartMenu, sendImageWithText } from "../components/answers";
+import { handleStartMenu } from "../components/answers";
 import { RediceService } from "../bot";
 import { MessageService } from "../services/messageService";
 import { runPersonReport } from "../services/reportService";
-import { resolve } from "path";
 
 export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: TelegramBot, RS: redis, MS: MessageService) {
   const userCb = new UserCb(query);
@@ -72,39 +71,34 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.offTable)) {
     if (cb === cbs.offTable) {
-      const response = await bot.sendMessage(chatId, 'Вы уверены, что хотите отключить ежедневную рассылку?', yesNo(cbs.offTable));
-      msgs.push({ chatId, messageId: response.message_id });
-      await MS.addNewAndDelOld(msgs, chatId);
+      MS.editMessage(chatId, messageId, 
+        'Вы уверены, что хотите отключить ежедневную рассылку?', 
+        yesNo(cbs.offTable).reply_markup)
     } else {
       let response;
       if (cb === cbs.offTable + cbs.yes) {
         await users_db.updateType(chatId, '', 'old');
-        response = await sendImageWithText(bot, chatId, 'success.png' , 'Вы успешно отключили ежедневную рассылку', mainOptions('old'));
+        MS.editMessage(chatId, messageId, 
+          'Вы успешно отключили ежедневную рассылку', 
+          mainOptions('old').reply_markup, 'success.png')
       } else {
-        response = await handleStartMenu(false, userCb, '/menu');
+        await handleStartMenu(false, userCb, '/menu');
       }
-
-      msgs.push({ chatId, messageId: response.message_id });
-      await MS.addNewAndDelOld(msgs, chatId);
     };
   };
 
 // *********** REPORT TIME *************
   if (cb.startsWith(cbs.changeTime)) {
     if (cb === cbs.changeTime) {
-      const response = await bot.sendMessage(chatId, 'Выберите время по МСК, когда вам будет удобно получать отчет:', {
-        reply_markup: {
-          inline_keyboard: generateReportTimeButtons(cbs.changeTime)
-        }
-      });
-      msgs.push({chatId, messageId: response.message_id});
-      await MS.addNewAndDelOld(msgs, chatId);
+      MS.editMessage(chatId, messageId, 
+        'Выберите время по МСК, когда вам будет удобно получать отчет:', 
+        { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
     } else {
       const selectedTime = cb.split(cbs.changeTime)[1]; 
       const type = await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
-      const response = await bot.sendMessage(chatId!, `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, mainOptions(type));
-      msgs.push({chatId, messageId: response.message_id});
-      await MS.addNewAndDelOld(msgs, chatId);
+      MS.editMessage(chatId, messageId, 
+        `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
+        mainOptions(type).reply_markup)
     }
   };
 
