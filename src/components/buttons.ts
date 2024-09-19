@@ -51,14 +51,14 @@ export const cbs = {
   goPrem: 'go_prem',
   loading: 'loading',
   getAllReportsNow: 'get_all_report_now',
-  connectionBtn: 'con',
-  myConnections: 'my_connections',
-  newConnection: 'new_connection',
-  getReportNow: 'getReportNow_',
-  changeTime: 'changeTime_',
-  editReportProducts: 'editReportProducts_',
-  editReportName: 'editReportName_',
-  offConnection: 'offConnection_',
+  connectionBtn: 'con?',
+  myConnections: 'myc?',
+  newConnection: 'onc?',
+  getReportNow: 'grn?',
+  changeTime: 'ct?',
+  editReportProducts: 'erp?',
+  editReportName: 'ern?',
+  offConnection: 'offc?',
 }
 
 export const buttons = {
@@ -133,29 +133,23 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   const conectionsPerPage = 12
   const pages = Math.round(connections.length / conectionsPerPage)
 
-  console.log(connections)
-
   connections.forEach((conection, i) => {
     console.log(chat_id)
 
     const data: ConnectionCallbackData = {
-      main: cbs.connectionBtn,
+      mn: cbs.connectionBtn,
       ss: conection.ss,
-      status: conection.status,
-      action: ""
+      sts: conection.status,
+      an: ""
     }
-
-    console.log(JSON.stringify(data))
     
     connectionButtons[0].push({ 
       text: `${conection.title ? conection.title : conection.ss}`, 
-      callback_data: data.main+'?'+newConnectionData(data), 
+      callback_data: data.mn+newConnectionData(data), 
     })
   })
 
-  console.log(1)
   connectionButtons.push([buttons.newConnection, buttons.menuAndEdit])
-  console.log(2)
 
   return connectionButtons;
 }

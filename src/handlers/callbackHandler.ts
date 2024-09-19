@@ -44,12 +44,9 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb.startsWith(cbs.connectionBtn)) {
-    console.log(cb)
     const data = parseConnectionData(cb)
-    console.log(data)
     const newCb = newConnectionData(data) 
-    console.log(newCb)
-    await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.status).reply_markup);
+    await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
   }
 
   if (cb === cbs.newConnection) {
@@ -65,7 +62,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     if (!reportMessageId) {
       await MS.editMessage(chatId, messageId, 
         'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        connectionOptions(newCb, data.status).reply_markup)
+        connectionOptions(newCb, data.sts).reply_markup)
     } 
     await MS.delNewDelOld(msgs, chatId);
   }

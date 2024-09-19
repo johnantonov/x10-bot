@@ -1,6 +1,6 @@
 export interface ConnectionCallbackData {
-  main: string
+  mn: string
   ss: string
-  status: string
-  action: string
+  sts: string
+  an: string
 }
