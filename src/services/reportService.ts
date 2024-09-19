@@ -105,7 +105,7 @@ export class ReportService {
       console.log(getYesterdayDate())
       const response = await axios.post(process.env.SS_REPORTS_GETTER_URL!, {
         ssList: ssList,
-        date: getYesterdayDate(),
+        date: '2024-09-19',
       });
       return response.data;
     } catch (error) {
