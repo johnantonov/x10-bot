@@ -145,7 +145,7 @@ export class ReportService {
       if (type === 'single' && ss) {
         console.log(ss)
         const reportData = await this.getReportsFromWebApp([ss]);
-        await this.processReportForUser(user, reportData)
+        await this.processReportForUser(user, reportData[ss])
       } else {
         const rows = await users_db.getConnections(user.chat_id) 
         console.log(rows)
