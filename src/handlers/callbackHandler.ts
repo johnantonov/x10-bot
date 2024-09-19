@@ -31,19 +31,19 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 //*********************** SHEETS ***********************//
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
-    MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
-    MS.saveMessage({ chatId, messageId, special: 'menu'})
+    const msg = await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
+    await MS.saveMessage({ chatId, messageId, special: 'menu'})
   };
 
   if (cb.startsWith(cbs.onTable)) {
     if (cb === cbs.onTable) {
-      MS.editMessage(chatId, messageId, 'Выберите время, когда вам будет удобно получать отчет:', {
+      await MS.editMessage(chatId, messageId, 'Выберите время, когда вам будет удобно получать отчет:', {
           inline_keyboard: generateReportTimeButtons(cbs.onTable)
       })
     } else {
       const selectedTime = cb.split(cbs.onTable)[1]; 
       await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         `Отчёт формируется всегда только за вчерашний день, когда Wildberries до конца присылает все данные.`, 
         mainOptions('old_ss').reply_markup)
     }
@@ -54,7 +54,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId)
     if (!reportMessageId) {
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
         mainOptions('old_ss').reply_markup)
     } 
@@ -64,7 +64,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb === cbs.editReportProducts) {
     const user = await users_db.getUserById(chatId);
     if (user) {
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${user.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
         returnMenu(true).reply_markup, 'editProducts.jpg')
     } 
@@ -72,14 +72,14 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.offTable)) {
     if (cb === cbs.offTable) {
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         'Вы уверены, что хотите отключить ежедневную рассылку?', 
         yesNo(cbs.offTable).reply_markup)
     } else {
       let response;
       if (cb === cbs.offTable + cbs.yes) {
         await users_db.updateType(chatId, '', 'old');
-        MS.editMessage(chatId, messageId, 
+        await MS.editMessage(chatId, messageId, 
           'Вы успешно отключили ежедневную рассылку', 
           mainOptions('old').reply_markup, 'success.png')
       } else {
@@ -91,13 +91,13 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 // *********** REPORT TIME *************
   if (cb.startsWith(cbs.changeTime)) {
     if (cb === cbs.changeTime) {
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         'Выберите время по МСК, когда вам будет удобно получать отчет:', 
         { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
     } else {
       const selectedTime = cb.split(cbs.changeTime)[1]; 
       const type = await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
-      MS.editMessage(chatId, messageId, 
+      await MS.editMessage(chatId, messageId, 
         `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
         mainOptions(type).reply_markup)
     }
