@@ -89,7 +89,7 @@ export class MessageService {
    */
   async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
     try {
-      const messages = await this.getMessages(chatId);
+      const messages = (await this.getMessages(chatId)).reverse();
       
       let specialFound = false
       
