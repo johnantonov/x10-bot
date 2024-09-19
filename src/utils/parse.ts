@@ -1,26 +1,22 @@
 import { resolve } from "path"
+import { ConnectionCallbackData } from "../dto/buttons"
 
-interface ConnectionCallbackData {
-  main: string
-  ss: string
-  status: string
-  action: string
-}
 
 export const getPath = (imageName: string) => {
   return resolve(__dirname, `../../../public/messageImages/${imageName}`)
 }
 
 export const parseConnectionData = (data: string): ConnectionCallbackData => {
-  const newData = data.split('SPLIT')
-  return {
-    main: newData[0],
-    ss: newData[1],
-    status: newData[2],
-    action: newData[3],
-  }
+  const newData = JSON.parse(data)
+  // return {
+  //   main: newData[0],
+  //   ss: newData[1],
+  //   status: newData[2],
+  //   action: newData[3],
+  // }
+  return newData
 }
 
 export const newConnectionData = (data: ConnectionCallbackData): string => {
-  return data.ss + "SPLIT" + data.status + "SPLIT" + data.action
+  return JSON.stringify(data)
 }

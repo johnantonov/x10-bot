@@ -1,6 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
 import { user_type } from "../dto/user";
 import { users_db } from "../../database/models/users";
+import { ConnectionCallbackData } from "../dto/buttons";
 
 interface btnData {
   text: string;
@@ -132,9 +133,20 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   const pages = Math.round(connections.length / conectionsPerPage)
 
   connections.forEach((conection, i) => {
+    console.log(chat_id)
+
+    const data: ConnectionCallbackData = {
+      main: cbs.connectionBtn,
+      ss: conection.ss,
+      status: conection.status,
+      action: ""
+    }
+
+    console.log(data)
+    
     connectionButtons[0].push({ 
       text: `${conection.title ? conection.title : conection.ss}`, 
-      callback_data: `${cbs.connectionBtn}${conection.ss}SPLIT${conection.status}SPLIT`, 
+      callback_data: JSON.stringify(data), 
     })
   })
 
