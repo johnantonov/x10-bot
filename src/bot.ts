@@ -63,9 +63,10 @@ bot.on('message', async (msg: TelegramBot.Message) => {
       await MS.saveMessages(msgs);
       return bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
     } else {
-      await MS.addNewAndDelOld(msgs, chatId);
+      await MS.delNewDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
-      await bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
+      const successResponse = await bot.sendMessage(chatId, answer.text, mainOptions('old'))
+      await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };
 
