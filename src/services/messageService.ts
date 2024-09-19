@@ -108,7 +108,7 @@ export class MessageService {
       }
       
       this.clearMessages(chatId) 
-      console.log(`All msgs deleted from storage, user: ${chatId}`);
+      console.log(`All msgs deleted from chat, user: ${chatId}`);
       
     } catch (error) {
       console.error(`Error during delete all msgs from chat, user: ${chatId} -`, error);
@@ -160,6 +160,7 @@ export class MessageService {
       }
   
       if (media) {
+        // /usr/src/app/public/messageImages/menu.jpg
         const imagePath = getPath(media)
         console.log(imagePath)
         await this.bot.editMessageMedia({

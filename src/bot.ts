@@ -45,12 +45,12 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   if (['/start', '/menu'].includes(text)) {
     await RediceService.deleteUserState(chatId)
     const menu = await MS.getSpecialMsg(chatId, 'menu')
+    await MS.delNewDelOld(msgs, chatId, 'menu');
     if (menu) {
       await handleStartMenu(false, userMsg, text as '/start' | '/menu', menu.messageId);
     } else {
       await handleStartMenu(true, userMsg, text as '/start' | '/menu');
     }
-    return MS.delNewDelOld(msgs, chatId, 'menu');
   };
 
   const userState = await RediceService.getUserState(chatId);
