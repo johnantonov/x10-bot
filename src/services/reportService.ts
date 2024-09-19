@@ -115,11 +115,9 @@ export class ReportService {
   }
 
   async processReportForUser(user: User, reportData: any) {
-    if (user.type === 'registered') {
-        if (reportData.ss) {
-          const message_id = await this.sendPhoto(user.chat_id, reportData.ss, reportData.ss, returnMenu(false).reply_markup)
-          return message_id
-        }
+    if (user.type === 'registered' && reportData[0]) {
+        const message_id = await this.sendPhoto(user.chat_id, reportData[0][3], reportData[0][2], returnMenu(false).reply_markup)
+        return message_id
     } 
   }
 
@@ -155,9 +153,7 @@ export class ReportService {
         console.log(ssList)
         const reportData = await this.getReportsFromWebApp(ssList);
         for (const ss of Object.keys(reportData)) {
-          console.log('processReportForUser', ss)
-          console.log('processReportForUser', reportData[ss])
-          await this.processReportForUser(user, { ss: reportData[ss] })
+          await this.processReportForUser(user, reportData[ss] )
         }
       }
     } catch (error) {
