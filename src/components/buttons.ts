@@ -138,8 +138,6 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
   const pages = Math.round(connections.length / conectionsPerPage)
 
   connections.forEach((conection, i) => {
-    console.log(chat_id)
-
     const data: ConnectionCallbackData = {
       mn: cbs.connectionBtn,
       ss: conection.ss,

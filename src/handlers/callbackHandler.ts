@@ -78,16 +78,16 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
 //*********************** ALL CONNECTIONS ***********************//
 
-  // if (cb === cbs.getAllReportsNow) {
-  //   await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
-  //   const reportMessageId = await runPersonReport(chatId, type, s)
-  //   if (!reportMessageId) {
-  //     await MS.editMessage(chatId, messageId, 
-  //       'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-  //       mainOptions().reply_markup)
-  //   } 
-  //   await MS.delNewDelOld(msgs, chatId);
-  // }
+  if (cb === cbs.getAllReportsNow) {
+    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
+    const reportMessageId = await runPersonReport(chatId, 'all')
+    if (!reportMessageId) {
+      await MS.editMessage(chatId, messageId, 
+        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+        mainOptions().reply_markup)
+    } 
+    await MS.delNewDelOld(msgs, chatId);
+  }
 
 
   // if (cb.startsWith(cbs.offTable)) {
