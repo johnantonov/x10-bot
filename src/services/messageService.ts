@@ -1,6 +1,7 @@
 import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
+import { resolve } from 'path';
 
 export class MessageService {
   private bot: TelegramBot;
@@ -105,6 +106,7 @@ export class MessageService {
         await this.bot.editMessageCaption(newText, {
           chat_id: chatId,
           message_id: messageId,
+          parse_mode: 'HTML',
         } as EditMessageTextOptions);
         console.log(`Сообщение с ID ${messageId} изменено: текст обновлен`);
       }
@@ -120,7 +122,7 @@ export class MessageService {
       if (newMedia) {
         await this.bot.editMessageMedia({
           type: 'photo',  
-          media: newMedia,
+          media: resolve(__dirname, `../../../public/messageImages/${newMedia}`),
         }, {
           chat_id: chatId,
           message_id: messageId,

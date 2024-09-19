@@ -64,10 +64,9 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb === cbs.editReportProducts) {
     const user = await users_db.getUserById(chatId);
     if (user) {
-      const img = resolve(__dirname, `../../../public/messageImages/editProducts.jpg`)
       MS.editMessage(chatId, messageId, 
         `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${user.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
-        returnMenu(true).reply_markup, img)
+        returnMenu(true).reply_markup, 'editProducts.jpg')
     } 
   }
 
