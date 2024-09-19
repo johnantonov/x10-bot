@@ -126,7 +126,7 @@ const startOptions = new Options([
 
 export async function generateConnectionsButtons(chat_id: number, page: number = 1): Promise<TelegramBot.InlineKeyboardButton[][]> {
   const connections = await users_db.getConnections(chat_id);
-  const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [];
+  const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [[]];
   const conectionsPerPage = 12
   const pages = Math.round(connections.length / conectionsPerPage)
 
