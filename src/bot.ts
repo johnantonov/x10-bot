@@ -44,7 +44,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   
   if (['/start', '/menu'].includes(text)) {
     await RediceService.deleteUserState(chatId)
-    response = await handleStartMenu(false, userMsg, text as '/start' | '/menu');
+    response = await handleStartMenu(true, userMsg, text as '/start' | '/menu');
   };
 
   const userState = await RediceService.getUserState(chatId);

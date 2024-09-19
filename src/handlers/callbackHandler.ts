@@ -20,14 +20,12 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
-    const response = await handleStartMenu(false, userCb, '/menu');
-    // MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup)
-    // msgs.push({ chatId, messageId: response.message_id })
-    // if (cb === cbs.menuAndClean) {
-    //   await MS.addNewAndDelOld(msgs, chatId)
-    // } else {
-    //   await MS.saveMessages(msgs)
-    // }
+    if (cb === cbs.menuAndClean) {
+      bot.sendMessage(chatId, " ", mainOptions('old_ss'))
+      const response = await MS.addNewAndDelOld(msgs, chatId)
+    } else {
+      const response = await handleStartMenu(false, userCb, '/menu');
+    }
   }
 
 //*********************** SHEETS ***********************//
