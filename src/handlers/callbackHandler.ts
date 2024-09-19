@@ -14,6 +14,10 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   const msgs: MessageMS[] = []
   const editMsgs: MessageMS[] = [];
 
+  if (!messageId) {
+    return
+  }
+
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
     const response = await handleStartMenu(bot, userCb, '/menu');
@@ -26,10 +30,10 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
 //*********************** SHEETS ***********************//
-  if (cb === cbs.setOldUserType || cb === cbs.goPrem) {
+  if (messageId !== undefined && cb === cbs.setOldUserType || cb === cbs.goPrem) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     // const response = await bot.sendMessage(chatId, '🔑 Введите ваш пароль :)', returnMenu(true));
-    messageId ? MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup )
+    MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup)
     // msgs.push({chatId, messageId: response.message_id, content: 'await_pass'})
     // return MS.saveMessages(msgs)
   };
