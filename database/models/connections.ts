@@ -11,6 +11,7 @@ export interface Connection {
   notification_time?: number;
   title?: string;
   type?: string;
+  status?: string;
   report_on?: boolean;
 }
 
