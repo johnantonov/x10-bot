@@ -12,7 +12,7 @@ export const getPath = (imageName: string) => {
 }
 
 export const parseConnectionData = (data: string): ConnectionCallbackData => {
-  const newData = data.split('_')
+  const newData = data.split('|')
   return {
     main: newData[0],
     ss: newData[1],
@@ -22,5 +22,5 @@ export const parseConnectionData = (data: string): ConnectionCallbackData => {
 }
 
 export const newConnectionData = (data: ConnectionCallbackData): string => {
-  return data.ss + "_" + data.status + "_" + data.action
+  return data.ss + "|" + data.status + "|" + data.action
 }
