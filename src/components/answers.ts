@@ -5,15 +5,11 @@ import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
 import { bot, MS } from "../bot";
-import { getPath } from "../utils/text";
+import { getPath, helloNewUserText } from "../utils/text";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
 }
-
-const helloNewUserText = `Это телеграм бот для получения ежедневных отчетов по вашему кабинету из Системы 10X.
-
-Для начала работы зарегистрируйте вашу систему:`
 
 export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | UserCb, command: '/menu' | '/start', specialMsgId?: number ) {
   try {
