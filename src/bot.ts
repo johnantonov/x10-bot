@@ -2,7 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
 import { mainOptions, setBotCommands } from './components/buttons';
 import { redis,  waitingStates } from './redis';
-import { getHelp, handleStartMenu, } from './components/answers';
+import { getHelp, handleStartMenu, sendImageWithText, } from './components/answers';
 import { AwaitingAnswer, MessageMS, UserMsg } from './dto/msgData';
 import { MessageService } from './services/messageService';
 import { callbackHandler } from './handlers/callbackHandler';
@@ -65,7 +65,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     } else {
       await MS.delNewDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
-      const successResponse = await bot.sendMessage(chatId, answer.text, mainOptions('old'))
+      const successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions('old'))
       await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };

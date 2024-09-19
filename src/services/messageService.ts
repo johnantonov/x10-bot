@@ -136,18 +136,20 @@ export class MessageService {
     messageId: number, 
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
-    newMedia?: string 
+    media?: string,
   ): Promise<void> {
-    try {
-      if (newText && !newMedia) {
-        await this.bot.editMessageText(newText, {
-          chat_id: chatId,
-          message_id: messageId,
-          parse_mode: 'HTML',
-        } as EditMessageTextOptions);
-      }
+    
 
-      if (newText && newMedia) {
+    try {
+      // if (newText && !media) {
+      //   await this.bot.editMessageText(newText, {
+      //     chat_id: chatId,
+      //     message_id: messageId,
+      //     parse_mode: 'HTML',
+      //   } as EditMessageTextOptions);
+      // }
+
+      if (newText) {
         await this.bot.editMessageCaption(newText, {
           chat_id: chatId,
           message_id: messageId,
@@ -162,10 +164,10 @@ export class MessageService {
         });
       }
   
-      if (newMedia) {
+      if (media) {
         await this.bot.editMessageMedia({
           type: 'photo',  
-          media: resolve(__dirname, `../../../public/messageImages/${newMedia}`),
+          media: resolve(__dirname, `../../../public/messageImages/${media}`),
         }, {
           chat_id: chatId,
           message_id: messageId,
