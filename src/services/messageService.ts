@@ -1,8 +1,7 @@
 import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
-import { resolve } from 'path';
-import { getPath } from '../utils/text';
+import { sendImageWithText } from '../components/answers';
 
 export class MessageService {
   private bot: TelegramBot;
@@ -132,20 +131,17 @@ export class MessageService {
     newText?: string, 
     newReplyMarkup?: InlineKeyboardMarkup, 
     media?: string,
-  ): Promise<void> {
+  ) {
     
 
     try {
-      // if (newText && !media) {
-      //   await this.bot.editMessageText(newText, {
-      //     chat_id: chatId,
-      //     message_id: messageId,
-      //     parse_mode: 'HTML',
-      //   } as EditMessageTextOptions);
-      // }
+      if (media) {
+        await this.bot.deleteMessage(chat_id, message_id)
+        return sendImageWithText(this.bot, +chat_id, media, newText, { reply_markup: newReplyMarkup })
+      }
 
       if (newText) {
-        await this.bot.editMessageCaption(newText, {
+        await this.bot.editMessageText(newText, {
           chat_id,
           message_id,
           parse_mode: 'HTML',
@@ -159,16 +155,6 @@ export class MessageService {
         });
       }
   
-      if (media) {
-        // /usr/src/app/public/messageImages/menu.jpg
-        // /usr/src/app/public/messageImages/editProducts.jpg
-        const imagePath = getPath(media)
-        console.log(imagePath)
-        await this.bot.editMessageMedia(
-          { type: 'photo', media: '/usr/src/app/public/messageImages/editProducts.jpg' },
-          { chat_id, message_id }
-        );
-      }
     } catch (error) {
       console.error(`Error editing msg, ID: ${message_id} - `, error);
     }
