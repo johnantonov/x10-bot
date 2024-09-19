@@ -21,7 +21,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
     if (cb === cbs.menuAndClean) {
-      const response = await handleStartMenu(true, userCb, '/menu');
+      const response = await handleStartMenu(false, userCb, '/menu');
     } else {
       const response = await handleStartMenu(false, userCb, '/menu');
     }
