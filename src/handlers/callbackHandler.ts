@@ -49,7 +49,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb.startsWith(cbs.connectionBtn)) {
-    const newCb =`${cb.split(cbs.connectionBtn)}_${chatId}`
+    const newCb =`${cb.split(cbs.connectionBtn)[0]}_${chatId}`
     console.log(newCb)
     await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(newCb).reply_markup);
   }
