@@ -102,7 +102,7 @@ export class MessageService {
   ): Promise<void> {
     try {
       if (newText) {
-        await this.bot.editMessageText(newText, {
+        await this.bot.editMessageCaption(newText, {
           chat_id: chatId,
           message_id: messageId,
         } as EditMessageTextOptions);

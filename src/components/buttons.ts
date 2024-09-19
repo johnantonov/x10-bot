@@ -75,7 +75,6 @@ export const buttons = {
   cancelArt: { text: '❌ Отменить отслеживание', callback_data: cbs.cancelArt },
   titleArt: { text: '✍️ Ввести название товара', callback_data: cbs.titleArt },
   costArt: { text: '💰 Ввести себестоимость товар', callback_data: cbs.costArt },
-  goPrem: { text: '👑 Перейти на премиум', callback_data: cbs.goPrem },
   getReportNow: { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow },
   editReportProducts: { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts },
   loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
