@@ -31,7 +31,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
-    await MS.saveMessage({ chatId, messageId })
   };
 
   if (cb.startsWith(cbs.onTable)) {
@@ -49,7 +48,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   };
 
   if (cb === cbs.getReportNow) {
-    messageId ? msgs.push({ chatId, messageId }) : null
     await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId)
     if (!reportMessageId) {
