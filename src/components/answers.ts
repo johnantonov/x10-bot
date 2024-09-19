@@ -5,7 +5,7 @@ import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
 import { bot, MS } from "../bot";
-import { getPath } from "../utils/text";
+import { getPath } from "../utils/parse";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );

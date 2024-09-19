@@ -1,5 +1,5 @@
 import { BaseModel } from "../BaseModel";
-import { Pool } from 'pg';
+import { Pool, QueryResult } from 'pg';
 import * as dotenv from 'dotenv';
 import pool from "../db";
 import { User, user_type } from "../../src/dto/user";
@@ -36,17 +36,6 @@ class UsersModel extends BaseModel<User> {
     await this.update('chat_id', chat_id, updateData, ['chat_id']);
   }
 
-  async updateReportTime(chat_id: number, time: number) {
-    try {
-      const updateData: Partial<User> = { notification_time: time, type: 'old_ss' };
-      await this.update('chat_id', chat_id, updateData, ['chat_id']);
-      console.log('postgres: update ss report time for '+chat_id)
-      return 'old_ss'
-    } catch (e) {
-      console.error('postgres: error to update ss report time for '+chat_id+" - "+e)
-    }
-  }
-
   async getUserById(chat_id: number) {
     const existingUser = await this.select({ chat_id });
       
@@ -55,6 +44,24 @@ class UsersModel extends BaseModel<User> {
       } else {
         return null
       }
+  }
+
+  async getConnections(chat_id: number) {
+    const query = `
+      SELECT * FROM connections
+      WHERE chat_id = $1
+    `;
+    const result = await this.pool.query(query, [chat_id]);
+    return result.rows;
+  }
+
+  async getConnection(chatId: number, ss: string) {
+    const query = `
+      SELECT * FROM connections
+      WHERE chat_id = $1 AND ss = $2
+    `;
+    const result = await this.pool.query(query, [chatId, ss]);
+    return result.rows[0];
   }
 }
 

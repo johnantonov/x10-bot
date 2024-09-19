@@ -1,5 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { user_type } from "../dto/user";
+import { users_db } from "../../database/models/users";
 
 interface btnData {
   text: string;
@@ -37,13 +38,7 @@ export async function setBotCommands(bot: TelegramBot) {
 }
 
 export const cbs = {
-  wbkey: 'wb_api_key',
-  followArticle: 'track',
-  yesFollow: 'yes_track',
-  changeTime: 'change_time',
   returnMain: 'return_main',
-  deleteArticle: 'delete',
-  setNewUserType: 'set_new_user_type',
   setOldUserType: 'set_old_user_type',
   onTable: 'turn_on_ss',
   offTable: 'turn_off_ss',
@@ -51,40 +46,33 @@ export const cbs = {
   no: '_no',
   menu: 'menu',
   menuAndEdit: 'menu_edit',
-  settingsArt: 'art_settings',
-  cancelArt: 'art_setting_cancel',
-  titleArt: 'art_setting_title',
-  costArt: 'art_setting_cost',
   goPrem: 'go_prem',
-  getReportNow: 'get_report_now',
   loading: 'loading',
-  editReportProducts: 'edit_report_products',
+  getAllReportsNow: 'get_all_report_now',
+  myConnections: 'my_connections',
+  getReportNow: 'getReportNow_',
+  changeTime: 'changeTime_',
+  editReportProducts: 'editReportProducts_',
+  editReportName: 'editReportName_',
 }
 
 export const buttons = {
-  setWbApiKey: { text: '➕ Привязать WB API ключ', callback_data: cbs.wbkey },
-  followArticle: { text: '👀 Отслеживать артикул', callback_data: cbs.followArticle },
-  yesReadyToFollow: { text: '✅ Да. Отслеживать новый артикул', callback_data: cbs.yesFollow },
-  changeTimeToReport: { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime },
   returnMain: { text: '🔙 Вернуться в главное меню', callback_data: cbs.returnMain },
   onTable: { text: '📂 Подключить телеграм отчет', callback_data: cbs.onTable },
-  offTable: { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
   menuAndEdit: { text: '↩️ Меню', callback_data: cbs.menuAndEdit },
-  settingsArticleReport: { text: '⚙️ Настроить отчет', callback_data: cbs.settingsArt },
-  cancelArt: { text: '❌ Отменить отслеживание', callback_data: cbs.cancelArt },
-  titleArt: { text: '✍️ Ввести название товара', callback_data: cbs.titleArt },
-  costArt: { text: '💰 Ввести себестоимость товар', callback_data: cbs.costArt },
-  getReportNow: { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow },
-  editReportProducts: { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts },
+  changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime + connection } },
+  getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow + connection } },
+  editReportProducts: (connection: string) => { return  { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts + connection } },
+  editReportName: (connection: string) => { return  { text: '✏️ Настроить товары в отчете', callback_data: cbs.editReportName + connection } },
+  offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable + connection } },
+  getAllReportsNow: { text: '📂 Сформировать отчеты сейчас', callback_data: cbs.getAllReportsNow } ,
+  myConnections: { text: '📊 Подключения', callback_data: cbs.myConnections } ,
   loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
   setOldUserType: { text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType },
 }
 
-export const wbOptions = new Options([
-  [{ text: '➕ Привязать WB API ключ', callback_data: cbs.wbkey }],
-  [{ text: '❌ Удалить артикул', callback_data: cbs.deleteArticle }],
-]);
+
 
 export const returnMenu = (edit: boolean = false) => {
   return new Options([
@@ -96,10 +84,8 @@ export const mainOptions = (type?: user_type, waitReport?: boolean) => {
   if (type?.startsWith('old')) {
     if (type.endsWith('_ss')) {
       const btns = [
-        [buttons.getReportNow],
-        [buttons.editReportProducts],
-        [buttons.changeTimeToReport],
-        [buttons.offTable],
+        [buttons.getAllReportsNow],
+        [buttons.myConnections],
       ]
       if (waitReport) {
         btns[0] = [buttons.loading]
@@ -108,20 +94,19 @@ export const mainOptions = (type?: user_type, waitReport?: boolean) => {
     }
     return new Options([
         [buttons.onTable],
-        [buttons.editReportProducts],
-        [buttons.changeTimeToReport],
-        [buttons.offTable],
       ]);
     }
   
   return startOptions
 } 
 
-export const settingsArtOptions = () => {
+export const connectionOptions = (connection: string) => {
   return new Options([
-    [buttons.titleArt],
-    [buttons.costArt],
-    [buttons.cancelArt],
+    [buttons.getReportNow(connection)],
+    [buttons.editReportProducts(connection)],
+    [buttons.changeTime(connection)],
+    [buttons.editReportName(connection)],
+    [buttons.offTable(connection)],
   ])
 }
 
@@ -136,7 +121,21 @@ const startOptions = new Options([
   [buttons.setOldUserType],
 ])
 
-export function generateReportTimeButtons(rep: string, page: number = 0): TelegramBot.InlineKeyboardButton[][] {
+
+export async function generateConnectionsButtons(chat_id: number, page: number = 1): Promise<TelegramBot.InlineKeyboardButton[][]> {
+  const connections = await users_db.getConnections(chat_id);
+  const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [];
+  const conectionsPerPage = 12
+  const pages = Math.round(connections.length / conectionsPerPage)
+
+  connections.forEach((connect, i) => {
+    connectionButtons[0].push({ text: `${connect.title ? connect.title : connect.ss}`, callback_data: `connectionBtn_${connect.ss}` })
+  })
+
+  return connectionButtons;
+}
+
+export function generateReportTimeButtons(changeTime: string, page: number = 0): TelegramBot.InlineKeyboardButton[][] {
   const startTime = 5;
   const endTime = 24;
   const timesPerPage = 20;
@@ -147,7 +146,7 @@ export function generateReportTimeButtons(rep: string, page: number = 0): Telegr
     if (!times[row]) {
       times[row] = [];
     }
-    times[row].push({ text: `${i}:00`, callback_data: `${rep}${i}` });
+    times[row].push({ text: `${i}:00`, callback_data: `${changeTime}${i}` });
   }
 
   /*

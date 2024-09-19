@@ -1,12 +1,14 @@
 import TelegramBot from "node-telegram-bot-api";
 import { MessageMS, UserCb } from "../dto/msgData";
-import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo } from "../components/buttons";
+import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions } from "../components/buttons";
 import { redis, rStates, ttls } from "../redis";
 import { users_db } from "../../database/models/users";
+import { connections_db } from "../../database/models/connections";
 import { handleStartMenu } from "../components/answers";
 import { RediceService } from "../bot";
 import { MessageService } from "../services/messageService";
 import { runPersonReport } from "../services/reportService";
+import { parseCallbackData } from "../utils/parse";
 
 export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: TelegramBot, RS: redis, MS: MessageService) {
   const userCb = new UserCb(query);
@@ -33,21 +35,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
   };
 
-  if (cb.startsWith(cbs.onTable)) {
-    if (cb === cbs.onTable) {
-      await MS.editMessage(chatId, messageId, 'Выберите время, когда вам будет удобно получать отчет:', {
-          inline_keyboard: generateReportTimeButtons(cbs.onTable)
-      })
-    } else {
-      const selectedTime = cb.split(cbs.onTable)[1]; 
-      await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
-      await MS.editMessage(chatId, messageId, 
-        `Отчёт формируется всегда только за вчерашний день, когда Wildberries до конца присылает все данные.`, 
-        mainOptions('old_ss').reply_markup)
-    }
-  };
-
-  if (cb === cbs.getReportNow) {
+  if (cb === cbs.getAllReportsNow) {
     await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId)
     if (!reportMessageId) {
@@ -86,17 +74,19 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   };
 
 // *********** REPORT TIME *************
+
   if (cb.startsWith(cbs.changeTime)) {
     if (cb === cbs.changeTime) {
       await MS.editMessage(chatId, messageId, 
         'Выберите время по МСК, когда вам будет удобно получать отчет:', 
         { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
     } else {
-      const selectedTime = cb.split(cbs.changeTime)[1]; 
-      const type = await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
+      const [ selectedTime, ss ] = parseCallbackData(cb, 'report_time')
+      const connection_callback = ss + chatId
+      // await connections_db.updateReportTime(chatId, ss, selectedTime)
       await MS.editMessage(chatId, messageId, 
         `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-        mainOptions(type).reply_markup)
+        connectionOptions(connection_callback).reply_markup)
     }
   };
 

@@ -2,24 +2,22 @@ export type user_type = 'old' | 'old_ss'
 
 export class User {
   chat_id: number;
-  username: string | undefined;
-  wb_api_key: string | undefined | null;
+  username: string;
   type: user_type;
-  article: number | null;
-  notification_time: number | null;
   added_at: string;
-  ss: string | undefined;
+  ss: string;
+  ss_report?: boolean;
+  
 
   [key: string]: any;
 
   constructor (data: any) {
     this.chat_id = data.chat.id;
     this.username = data.from?.username
-    this.wb_api_key = data.message_id
     this.type = data.text;
-    this.article = data.message_id
-    this.notification_time = null
-    this.added_at = `${new Date()}`
+    this.added_at = `${new Date()}`,
+    this.ss = data.ss,
+    this.ss_report = data.ss
   }
 }
 
