@@ -2,8 +2,11 @@ import axios from "axios";
 import { AwaitingAnswer, UserMsg } from "../dto/msgData";
 import { rStates } from "../redis";
 import { users_db } from "../../database/models/users";
+import dotenv from 'dotenv';
+import { connections_db } from "../../database/models/connections";
+dotenv.config();
 
-export async function awaitingHandler(data: UserMsg, state: string, env: any) {
+export async function awaitingHandler(data: UserMsg, state: string) {
   if (!data.text) {
     return new AwaitingAnswer({ result: false, text: "Текст отсутствует." });
   }
@@ -15,27 +18,43 @@ export async function awaitingHandler(data: UserMsg, state: string, env: any) {
   try {
     switch (state) {
       case rStates.waitPremPass:
-        const response = await axios.post(env.PASS_CHECKER_URL, { pass: data.text }, {
-          headers: {
-              'Content-Type': 'application/json'
-          }
-        })
-        const res = response.data
+        const responsePass = await checkConnection(data.text)
+        const res = responsePass.data
         console.log('pass checker result: '+JSON.stringify(res))
         if (res.error) {
           return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
         } else if (res.status === false) {
           return new AwaitingAnswer({ result: false, text: res.text})
         } 
+        await connections_db.addConnection({ chat_id: data.chatId, ss: data.text })
         await users_db.updateType(data.chatId, data.text)
         return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' })
-        default: 
-        return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
+      case rStates.waitNewConnection:
+        const responseConnection = await checkConnection(data.text)
+        const result = responseConnection.data
+        console.log('pass checker result: '+JSON.stringify(res))
+        if (result.error) {
+          return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
+        } else if (result.status === false) {
+          return new AwaitingAnswer({ result: false, text: res.text})
+        } 
+        await connections_db.addConnection({ chat_id: data.chatId, ss: data.text })
+        return new AwaitingAnswer({ result: true, text: "Вы подключили новую Систему.", type: 'old' })
+      default: 
+      return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
       }
   } catch (e) {
     console.error('Error in awaiting handler: '+e)
     return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
   }
+}
+
+async function checkConnection(pass: string) {
+  return axios.post(process.env.PASS_CHECKER_URL!, { pass: pass }, {
+    headers: {
+        'Content-Type': 'application/json'
+    }
+  })
 }
 
 export function isKey(text: string, state: string): Boolean {

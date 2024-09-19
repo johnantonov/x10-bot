@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { MessageMS, UserCb } from "../dto/msgData";
-import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions } from "../components/buttons";
+import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons } from "../components/buttons";
 import { redis, rStates, ttls } from "../redis";
 import { users_db } from "../../database/models/users";
 import { connections_db } from "../../database/models/connections";
@@ -34,6 +34,18 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
   };
+
+  if (cb === cbs.myConnections) {
+    const buttons = await generateConnectionsButtons(chatId)
+
+    await MS.editMessage(chatId, messageId, 
+      'Выберите подключение:', 
+      { inline_keyboard: buttons })
+  }
+
+  if (cb === cbs.newConnection) {
+    
+  }
 
   if (cb === cbs.getAllReportsNow) {
     await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })

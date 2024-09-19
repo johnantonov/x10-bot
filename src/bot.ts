@@ -57,7 +57,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
 
   if (userState && waitingStates.includes(userState)) {
     response = await bot.sendMessage(chatId, "Проверяем...⌛️");
-    const answer: AwaitingAnswer = await awaitingHandler(userMsg, userState, process.env)
+    const answer: AwaitingAnswer = await awaitingHandler(userMsg, userState)
     msgs.push({ chatId, messageId: response.message_id, special: 'menu' })
 
     if (!answer.result) {

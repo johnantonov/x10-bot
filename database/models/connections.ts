@@ -8,10 +8,10 @@ dotenv.config();
 export interface Connection {
   ss: string;
   chat_id: number;
-  notification_time: number;
-  title: string;
-  type: string;
-  report_on: boolean;
+  notification_time?: number;
+  title?: string;
+  type?: string;
+  report_on?: boolean;
 }
 
 class ConnectionsModel extends BaseModel<Connection> {
