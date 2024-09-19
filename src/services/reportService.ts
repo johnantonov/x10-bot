@@ -101,6 +101,8 @@ export class ReportService {
   // Send SS values to Google Web App and receive report data
   async getReportsFromWebApp(ssList: string[]): Promise<Record<string, string>> {
     try {
+      console.log(ssList)
+      console.log(getYesterdayDate())
       const response = await axios.post(process.env.SS_REPORTS_GETTER_URL!, {
         ssList: ssList,
         date: getYesterdayDate(),
