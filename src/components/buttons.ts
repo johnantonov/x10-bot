@@ -50,7 +50,7 @@ export const cbs = {
   yes: '_yes',
   no: '_no',
   menu: 'menu',
-  menuAndClean: 'menu_clean',
+  menuAndEdit: 'menu_edit',
   settingsArt: 'art_settings',
   cancelArt: 'art_setting_cancel',
   titleArt: 'art_setting_title',
@@ -70,7 +70,7 @@ export const buttons = {
   onTable: { text: '📂 Подключить телеграм отчет', callback_data: cbs.onTable },
   offTable: { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
-  menuAndClean: { text: '↩️ Меню', callback_data: cbs.menuAndClean },
+  menuAndEdit: { text: '↩️ Меню', callback_data: cbs.menuAndEdit },
   settingsArticleReport: { text: '⚙️ Настроить отчет', callback_data: cbs.settingsArt },
   cancelArt: { text: '❌ Отменить отслеживание', callback_data: cbs.cancelArt },
   titleArt: { text: '✍️ Ввести название товара', callback_data: cbs.titleArt },
@@ -86,9 +86,9 @@ export const wbOptions = new Options([
   [{ text: '❌ Удалить артикул', callback_data: cbs.deleteArticle }],
 ]);
 
-export const returnMenu = (clean: boolean = false) => {
+export const returnMenu = (edit: boolean = false) => {
   return new Options([
-    [clean ? buttons.menuAndClean : buttons.menu]
+    [edit ? buttons.menuAndEdit : buttons.menu]
   ])
 }
 

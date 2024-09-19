@@ -20,11 +20,10 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
-    if (cb === cbs.menuAndClean) {
+    if (cb === cbs.menuAndEdit) {
       const response = await handleStartMenu(false, userCb, '/menu');
-    } else {
-      const response = await handleStartMenu(false, userCb, '/menu');
-    }
+      // msgs.push({ chatId, messageId: response.message_id, special: 'edit' })
+    } 
   }
 
 //*********************** SHEETS ***********************//
@@ -35,19 +34,15 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb.startsWith(cbs.onTable)) {
     if (cb === cbs.onTable) {
-      const response = await bot.sendMessage(chatId, 'Выберите время, когда вам будет удобно получать отчет:', {
-        reply_markup: {
+      MS.editMessage(chatId, messageId, 'Выберите время, когда вам будет удобно получать отчет:', {
           inline_keyboard: generateReportTimeButtons(cbs.onTable)
-        }
-      });
-      msgs.push({chatId, messageId: response.message_id});
-      await MS.addNewAndDelOld(msgs, chatId);
+      })
     } else {
       const selectedTime = cb.split(cbs.onTable)[1]; 
       await users_db.updateReportTime(chatId, selectedTime.split(':')[0]);
-      const response = await bot.sendMessage(chatId!, `Отчёт формируется всегда только за вчерашний день, когда Wildberries до конца присылает все данные.`, mainOptions('old_ss'));
-      msgs.push({ chatId, messageId: response.message_id });
-      await MS.addNewAndDelOld(msgs, chatId);
+      MS.editMessage(chatId, messageId, 
+        `Отчёт формируется всегда только за вчерашний день, когда Wildberries до конца присылает все данные.`, 
+        mainOptions('old_ss').reply_markup)
     }
   };
 

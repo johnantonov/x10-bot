@@ -119,11 +119,11 @@ export class ReportService {
       if (typeProcess === 'one') {
         data = await this.getReportsFromWebApp([user.ss]);
 
-        const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(true).reply_markup)
+        const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(false).reply_markup)
         return message_id
       } else {
         if (data[user.ss]) {
-          const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(true).reply_markup)
+          const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(false).reply_markup)
           return message_id
         }
       }
