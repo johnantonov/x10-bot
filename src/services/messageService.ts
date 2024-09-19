@@ -93,7 +93,7 @@ export class MessageService {
       
       let specialFound = false
       
-      for (const [message, index] of messages) {
+      for (const message of messages) {
         try {
           console.log(messages)
           if (exclude && message.special === exclude && !specialFound) {
