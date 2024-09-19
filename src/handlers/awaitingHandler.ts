@@ -17,7 +17,7 @@ export async function awaitingHandler(data: UserMsg, state: string) {
 
   try {
     switch (state) {
-      case rStates.waitPremPass:
+      case rStates.waitPremPass || rStates.waitNewConnection:
         const responsePass = await checkConnection(data.text)
         const res = responsePass.data
         console.log('pass checker result: '+JSON.stringify(res))
@@ -26,20 +26,14 @@ export async function awaitingHandler(data: UserMsg, state: string) {
         } else if (res.status === false) {
           return new AwaitingAnswer({ result: false, text: res.text})
         } 
+        let msg;
         await connections_db.addConnection({ chat_id: data.chatId, ss: data.text })
-        await users_db.updateType(data.chatId, data.text)
-        return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' })
-      case rStates.waitNewConnection:
-        const responseConnection = await checkConnection(data.text)
-        const result = responseConnection.data
-        console.log('pass checker result: '+JSON.stringify(res))
-        if (result.error) {
-          return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
-        } else if (result.status === false) {
-          return new AwaitingAnswer({ result: false, text: res.text})
-        } 
-        await connections_db.addConnection({ chat_id: data.chatId, ss: data.text })
-        return new AwaitingAnswer({ result: true, text: "Вы подключили новую Систему.", type: 'old' })
+        if (state === rStates.waitPremPass) {
+          await users_db.updateType(data.chatId, data.text)
+          return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' })
+        }
+        return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
+     
       default: 
       return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
       }
