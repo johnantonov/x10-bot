@@ -25,6 +25,17 @@ export class Options {
   }
 }
 
+export async function setBotCommands(bot: TelegramBot) {
+  try {
+    await bot.setMyCommands([
+      { command: '/menu', description: 'Главное меню' }
+    ]);
+    console.log('Команды установлены.');
+  } catch (error) {
+    console.error('Ошибка при установке команд:', error);
+  }
+}
+
 export const cbs = {
   wbkey: 'wb_api_key',
   followArticle: 'track',
@@ -68,6 +79,7 @@ export const buttons = {
   getReportNow: { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow },
   editReportProducts: { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts },
   loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
+  setOldUserType: { text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType },
 }
 
 export const wbOptions = new Options([
@@ -97,6 +109,9 @@ export const mainOptions = (type?: user_type, waitReport?: boolean) => {
     }
     return new Options([
         [buttons.onTable],
+        [buttons.editReportProducts],
+        [buttons.changeTimeToReport],
+        [buttons.offTable],
       ]);
     }
   
@@ -119,7 +134,7 @@ export const yesNo = (cbPart: string) => {
 }
 
 const startOptions = new Options([
-  [{ text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType }],
+  [buttons.setOldUserType],
 ])
 
 export function generateReportTimeButtons(rep: string, page: number = 0): TelegramBot.InlineKeyboardButton[][] {
@@ -153,13 +168,3 @@ export function generateReportTimeButtons(rep: string, page: number = 0): Telegr
   return times;
 }
 
-export async function setBotCommands(bot: TelegramBot) {
-  try {
-    await bot.setMyCommands([
-      { command: '/menu', description: 'Главное меню' }
-    ]);
-    console.log('Команды установлены.');
-  } catch (error) {
-    console.error('Ошибка при установке команд:', error);
-  }
-}
