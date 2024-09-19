@@ -2,6 +2,7 @@ import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } fro
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
 import { resolve } from 'path';
+import { getPath } from '../utils/text';
 
 export class MessageService {
   private bot: TelegramBot;
@@ -167,7 +168,7 @@ export class MessageService {
       if (media) {
         await this.bot.editMessageMedia({
           type: 'photo',  
-          media: resolve(__dirname, `../../../public/messageImages/${media}`),
+          media: getPath(media),
         }, {
           chat_id: chatId,
           message_id: messageId,

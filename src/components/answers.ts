@@ -5,6 +5,7 @@ import { users_db } from "../../database/models/users";
 import { UserCb, UserMsg } from "../dto/msgData";
 import { mainOptions } from "./buttons";
 import { bot, MS } from "../bot";
+import { getPath } from "../utils/text";
 
 export function getHelp(bot: TelegramBot, id: ChatId) {
   return bot.sendMessage(id, `/menu - Открыть меню бота` );
@@ -49,6 +50,6 @@ export function sendImageWithText(
   caption?: string,
   options?: SendMessageOptions
 ): Promise<Message> {
-  const imagePath = resolve(__dirname, `../../../public/messageImages/${imageName}`);
+  const imagePath = getPath(imageName);
   return bot.sendPhoto(chatId, imagePath, { caption, ...options });
 }
