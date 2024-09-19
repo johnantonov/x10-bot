@@ -10,7 +10,6 @@ const helpInfo = `
 /admin__run_report_service - запуск репорт сервиса на прошедший час
 /admin__clean_db_{tableName} - очистить таблицу в базе данных
 /admin__delete_user_{id} - удалить пользователя из таблицы users
-/admin__send_report_{id} - отправить отчет пользователю внеочереди
 `
 
 export async function handleAdminCommand(chatId: number, command: string, bot: TelegramBot) {
@@ -59,19 +58,19 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
       }
     }
 
-    if (action.startsWith('send_report')) {
-      try {
-        const userId = action.split('report_')[1];
-        if (userId) {
-          runPersonReport(+userId)
-          // await bot.sendMessage(chatId, "Функция временно недоступна")
-        } else {
-          console.error('Error: No user specified for report service');
-        }
-      } catch (e) {
-        console.error('Error to start report service personally: ' + e);
-      }
-    }
+    // if (action.startsWith('send_report')) {
+    //   try {
+    //     const userId = action.split('report_')[1];
+    //     if (userId) {
+    //       runPersonReport(+userId)
+    //       // await bot.sendMessage(chatId, "Функция временно недоступна")
+    //     } else {
+    //       console.error('Error: No user specified for report service');
+    //     }
+    //   } catch (e) {
+    //     console.error('Error to start report service personally: ' + e);
+    //   }
+    // }
     
     if (action.startsWith('help')) {
       await bot.sendMessage(chatId, helpInfo)
