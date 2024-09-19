@@ -49,8 +49,8 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (cb.startsWith(cbs.connectionBtn)) {
-    const newCb = cb.split('_')+chatId
-    console.log(ss)
+    const newCb =`${cb.split(cbs.connectionBtn)}_${chatId}`
+    console.log(newCb)
     await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(newCb).reply_markup);
   }
 
