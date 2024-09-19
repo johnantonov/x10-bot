@@ -16,27 +16,33 @@ export async function awaitingHandler(data: UserMsg, state: string) {
   }
 
   try {
-    switch (state) {
-      case rStates.waitPremPass || rStates.waitNewConnection:
-        const responsePass = await checkConnection(data.text)
-        const res = responsePass.data
-        console.log('pass checker result: '+JSON.stringify(res))
-        if (res.error) {
-          return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
-        } else if (res.status === false) {
-          return new AwaitingAnswer({ result: false, text: res.text})
-        } 
-        let msg;
-        await connections_db.addConnection({ chat_id: data.chatId, ss: data.text })
-        if (state === rStates.waitPremPass) {
-          await users_db.updateType(data.chatId, data.text)
-          return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' })
-        }
-        return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
-     
-      default: 
-      return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
+    const handleError = (message: string) => new AwaitingAnswer({ result: false, text: message });
+    
+    if (state === rStates.waitPremPass || state === rStates.waitNewConnection) {
+      const responsePass = await checkConnection(data.text);
+      const res = responsePass.data;
+  
+      console.log('pass checker result: ' + JSON.stringify(res));
+  
+      if (res.error) {
+        return handleError("Возникла ошибка, попробуйте еще раз.");
       }
+  
+      if (res.status === false) {
+        return handleError(res.text);
+      }
+  
+      await connections_db.addConnection({ chat_id: data.chatId, ss: data.text });
+  
+      if (state === rStates.waitPremPass) {
+        await users_db.updateType(data.chatId, data.text);
+        return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'old' });
+      }
+  
+      return handleError("Возникла ошибка, попробуйте еще раз.");
+    }
+  
+    return handleError("Возникла ошибка, попробуйте еще раз.");
   } catch (e) {
     console.error('Error in awaiting handler: '+e)
     return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })

@@ -85,23 +85,21 @@ export const returnMenu = (edit: boolean = false) => {
 
 export const mainOptions = (type?: user_type, waitReport?: boolean) => {
   if (type?.startsWith('old')) {
-    if (type.endsWith('_ss')) {
-      const btns = [
-        [buttons.getAllReportsNow],
-        [buttons.myConnections],
-      ]
+      const btns = [[buttons.getAllReportsNow], [buttons.myConnections]]
+
       if (waitReport) {
         btns[0] = [buttons.loading]
       }
+
       return new Options(btns);
-    }
-    return new Options([
-        [buttons.myConnections],
-      ]);
     }
   
   return startOptions
 } 
+
+const startOptions = new Options([
+  [buttons.setOldUserType],
+])
 
 export const connectionOptions = (connection: string) => {
   return new Options([
@@ -120,9 +118,7 @@ export const yesNo = (cbPart: string) => {
   ])
 }
 
-const startOptions = new Options([
-  [buttons.setOldUserType],
-])
+
 
 
 export async function generateConnectionsButtons(chat_id: number, page: number = 1): Promise<TelegramBot.InlineKeyboardButton[][]> {
