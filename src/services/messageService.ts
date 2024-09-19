@@ -91,10 +91,14 @@ export class MessageService {
     try {
       const messages = await this.getMessages(chatId);
       
-      for (const message of messages) {
+      let specialFound = false
+      
+      for (const [message, index] of messages) {
         try {
           console.log(messages)
-          if (exclude && message.special === exclude) continue;
+          if (exclude && message.special === exclude && !specialFound) {
+            specialFound = true
+          };
           await this.bot.deleteMessage(chatId, message.messageId); 
           console.log(`Message ${message.messageId} deleted from ${chatId}`);
         } catch (error) {

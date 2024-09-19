@@ -69,15 +69,6 @@ bot.on('message', async (msg: TelegramBot.Message) => {
       await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };
-
-  // if (response && response.message_id) {
-  //   msgs.push({ chatId, messageId: response.message_id })
-  // } else {
-  //   const res = await bot.sendMessage(chatId, 'Я вас не понял. /menu.');
-  //   msgs.push({ chatId, messageId: res.message_id });
-  // }
-  
-  // return MS.addNewAndDelOld(msgs, chatId);
 });
 
 console.log('Bot started!');
