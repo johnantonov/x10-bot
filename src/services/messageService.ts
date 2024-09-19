@@ -26,12 +26,13 @@ export class MessageService {
   /**
    * save msg
    */
-  async saveMessage({ chatId, messageId, direction, content } : MessageMS) {
+  async saveMessage({ chatId, messageId, direction, content, special } : MessageMS) {
     const messageKey = `messages:${chatId}`;
     const message = {
       messageId,
       direction,
       content,
+      special,
       timestamp: Date.now(),
     };
     await this.client.rpush(messageKey, JSON.stringify(message));
