@@ -7,6 +7,7 @@ import { handleStartMenu, sendImageWithText } from "../components/answers";
 import { RediceService } from "../bot";
 import { MessageService } from "../services/messageService";
 import { runPersonReport } from "../services/reportService";
+import { resolve } from "path";
 
 export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: TelegramBot, RS: redis, MS: MessageService) {
   const userCb = new UserCb(query);
@@ -21,9 +22,11 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb.startsWith(cbs.menu)) {
     await RediceService.deleteUserState(chatId)
     if (cb === cbs.menuAndEdit) {
-      const response = await handleStartMenu(false, userCb, '/menu');
+      await handleStartMenu(false, userCb, '/menu');
       // msgs.push({ chatId, messageId: response.message_id, special: 'edit' })
-    } 
+    } else {
+      await handleStartMenu(true, userCb, '/menu');
+    }
   }
 
 //*********************** SHEETS ***********************//
@@ -51,25 +54,21 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId)
     if (!reportMessageId) {
-      const response = await bot.sendMessage(chatId, 'Произошла ошибка при формировании отчета, попробуйте позже. 😢', mainOptions('old_ss'))
-      msgs.push({ chatId, messageId: response.message_id })
+      MS.editMessage(chatId, messageId, 
+        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+        mainOptions('old_ss').reply_markup)
     } 
     await MS.addNewAndDelOld(msgs, chatId);
   }
 
   if (cb === cbs.editReportProducts) {
-    messageId ? msgs.push({ chatId, messageId }) : null
     const user = await users_db.getUserById(chatId);
     if (user) {
-      const response = await sendImageWithText(
-        bot, chatId, 'editProducts.jpg', 
+      const img = resolve(__dirname, `../../../public/messageImages/editProducts.jpg`)
+      MS.editMessage(chatId, messageId, 
         `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${user.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
-        { reply_markup: returnMenu(true).reply_markup, parse_mode: "HTML" }
-      )
-      msgs.push({ chatId, messageId: response.message_id })
-    }
-
-    await MS.addNewAndDelOld(msgs, chatId);
+        returnMenu(true).reply_markup, img)
+    } 
   }
 
   if (cb.startsWith(cbs.offTable)) {
