@@ -139,7 +139,15 @@ export class MessageService {
     newMedia?: string 
   ): Promise<void> {
     try {
-      if (newText) {
+      if (newText && !newMedia) {
+        await this.bot.editMessageText(newText, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'HTML',
+        } as EditMessageTextOptions);
+      }
+
+      if (newText && newMedia) {
         await this.bot.editMessageCaption(newText, {
           chat_id: chatId,
           message_id: messageId,
