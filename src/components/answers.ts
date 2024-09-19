@@ -31,6 +31,7 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
       await users_db.insert({ chat_id: msg.chatId, username: msg.username, notification_time: 19, });
       console.log('insert new user into db: '+msg.chatId+" "+msg.username)
       const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions());
+      console.log(newMenu.message_id)
       await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     }
   } catch (error) {
@@ -47,5 +48,6 @@ export function sendImageWithText(
   options?: SendMessageOptions
 ): Promise<Message> {
   const imagePath = getPath(imageName);
+  console.log(imagePath)
   return bot.sendPhoto(chatId, imagePath, { caption, ...options });
 }

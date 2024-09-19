@@ -115,17 +115,6 @@ export class MessageService {
     }
   }
 
-  // delete msg from redis
-  // async deleteMessageFromStorage(chatId: number, messageId: number) {
-  //   const messageKey = `messages:${chatId}`;
-  //   const messages = await this.getMessages(chatId);
-  //   const updatedMessages = messages.filter(message => message.messageId !== messageId);
-  //   await this.client.del(messageKey);
-  //   for (const msg of updatedMessages) {
-  //     await this.client.rpush(messageKey, JSON.stringify(msg));
-  //   }
-  // }
-
   /**
    * delete all msgs from storage
    */
@@ -171,11 +160,11 @@ export class MessageService {
       }
   
       if (media) {
-        const imgPath = getPath(media)
-
+        const imagePath = getPath(media)
+        console.log(imagePath)
         await this.bot.editMessageMedia({
           type: 'photo',  
-          media: imgPath,
+          media: imagePath,
         }, {
           chat_id: chatId,
           message_id: messageId,
