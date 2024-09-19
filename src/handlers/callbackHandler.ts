@@ -8,7 +8,7 @@ import { handleStartMenu } from "../components/answers";
 import { RediceService } from "../bot";
 import { MessageService } from "../services/messageService";
 import { runPersonReport } from "../services/reportService";
-import { parseCallbackData } from "../utils/parse";
+import { newConnectionData, parseConnectionData } from "../utils/parse";
 
 export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: TelegramBot, RS: redis, MS: MessageService) {
   const userCb = new UserCb(query);
@@ -29,7 +29,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     }
   }
 
-//*********************** SHEETS ***********************//
+//*********************** CONNECTIONS ***********************//
   if (cb === cbs.setOldUserType) {
     await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
     await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
@@ -37,10 +37,15 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb === cbs.myConnections) {
     const buttons = await generateConnectionsButtons(chatId)
-
     await MS.editMessage(chatId, messageId, 
       'Выберите подключение:', 
       { inline_keyboard: buttons })
+  }
+
+  if (cb.startsWith(cbs.connectionBtn)) {
+    const data = parseConnectionData(cb)
+    const newCb = newConnectionData(data) 
+    await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.status).reply_markup);
   }
 
   if (cb === cbs.newConnection) {
@@ -48,19 +53,26 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await MS.editMessage(chatId, messageId, '🔑 Введите пароль от подключения', returnMenu(true).reply_markup);
   }
 
-  if (cb.startsWith(cbs.connectionBtn)) {
-    const newCb =`${cb.split(cbs.connectionBtn)[0]}_${chatId}`
-    console.log(newCb)
-    await MS.editMessage(chatId, messageId, 'Ваши подключения', connectionOptions(newCb).reply_markup);
+  if (cb.startsWith(cbs.getReportNow)) {
+    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
+    const data = parseConnectionData(cb);
+    const newCb = newConnectionData(data) 
+    const reportMessageId = await runPersonReport(chatId, 'single', data.ss)
+    if (!reportMessageId) {
+      await MS.editMessage(chatId, messageId, 
+        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+        connectionOptions(newCb, data.status).reply_markup)
+    } 
+    await MS.delNewDelOld(msgs, chatId);
   }
 
   if (cb === cbs.getAllReportsNow) {
-    await bot.editMessageReplyMarkup(mainOptions('old_ss', true).reply_markup, { chat_id: chatId, message_id: messageId })
+    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId)
     if (!reportMessageId) {
       await MS.editMessage(chatId, messageId, 
         'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        mainOptions('old_ss').reply_markup)
+        mainOptions().reply_markup)
     } 
     await MS.delNewDelOld(msgs, chatId);
   }
@@ -74,40 +86,40 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     } 
   }
 
-  if (cb.startsWith(cbs.offTable)) {
-    if (cb === cbs.offTable) {
-      await MS.editMessage(chatId, messageId, 
-        'Вы уверены, что хотите отключить ежедневную рассылку?', 
-        yesNo(cbs.offTable).reply_markup)
-    } else {
-      let response;
-      if (cb === cbs.offTable + cbs.yes) {
-        await users_db.updateType(chatId, '', 'old');
-        await MS.editMessage(chatId, messageId, 
-          'Вы успешно отключили ежедневную рассылку', 
-          mainOptions('old').reply_markup, 'success.png')
-      } else {
-        await handleStartMenu(false, userCb, '/menu');
-      }
-    };
-  };
+  // if (cb.startsWith(cbs.offTable)) {
+  //   if (cb === cbs.offTable) {
+  //     await MS.editMessage(chatId, messageId, 
+  //       'Вы уверены, что хотите отключить ежедневную рассылку?', 
+  //       yesNo(cbs.offTable).reply_markup)
+  //   } else {
+  //     let response;
+  //     if (cb === cbs.offTable + cbs.yes) {
+  //       await users_db.updateType(chatId, '', 'registered');
+  //       await MS.editMessage(chatId, messageId, 
+  //         'Вы успешно отключили ежедневную рассылку', 
+  //         mainOptions(false, 'registered').reply_markup, 'success.png')
+  //     } else {
+  //       await handleStartMenu(false, userCb, '/menu');
+  //     }
+  //   };
+  // };
 
 // *********** REPORT TIME *************
 
-  if (cb.startsWith(cbs.changeTime)) {
-    if (cb === cbs.changeTime) {
-      await MS.editMessage(chatId, messageId, 
-        'Выберите время по МСК, когда вам будет удобно получать отчет:', 
-        { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
-    } else {
-      const [ selectedTime, ss ] = parseCallbackData(cb, 'report_time')
-      const connection_callback = ss + chatId
-      // await connections_db.updateReportTime(chatId, ss, selectedTime)
-      await MS.editMessage(chatId, messageId, 
-        `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-        connectionOptions(connection_callback).reply_markup)
-    }
-  };
+  // if (cb.startsWith(cbs.changeTime)) {
+  //   if (cb === cbs.changeTime) {
+  //     await MS.editMessage(chatId, messageId, 
+  //       'Выберите время по МСК, когда вам будет удобно получать отчет:', 
+  //       { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
+  //   } else {
+  //     const [ selectedTime, ss ] = parseCallbackData(cb, 'report_time')
+  //     const connection_callback = ss + chatId
+  //     // await connections_db.updateReportTime(chatId, ss, selectedTime)
+  //     await MS.editMessage(chatId, messageId, 
+  //       `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
+  //       connectionOptions(connection_callback, ).reply_markup)
+  //   }
+  // };
 
   return bot.answerCallbackQuery(query.id);
 }

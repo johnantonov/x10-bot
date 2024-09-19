@@ -14,12 +14,12 @@ dotenv.config();
 const port = process.env.BASE_PORT;
 
 app.post('/runReportForUser', async (req, res) => {
-  const { chatId } = req.body;
+  const { chatId, type, ss } = req.body;
   try {
     const RS = new ReportService(pool);
     const user = await users_db.getUserById(chatId);
     if (user) {
-      const id = await RS.runForUser(user);
+      const id = await RS.runForUser(user, type, ss);
       res.status(200).send('Report run successfully for user.');
       return id
     } else {
@@ -34,8 +34,8 @@ app.listen(port, () => {
   console.log(`API Server running on port ${port}`);
 });
 
-export async function runPersonReport(chat_id: number): Promise<number | null> {
-  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id })
+export async function runPersonReport(chat_id: number, type: 'single' | 'all', ss?: string ): Promise<number | null> {
+  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id, type: type, ss: ss })
     .then(response => {
       console.log('Report initiated: ', response.data);
       return response.data; 
@@ -112,34 +112,25 @@ export class ReportService {
     }
   }
 
-  async processReportForUser(user: User, typeProcess: 'one' | 'all', reportData?: any) {
-    let data = reportData ? reportData : null
-
-    if (user.type === 'old_ss' && user.ss) {
-      if (typeProcess === 'one') {
-        data = await this.getReportsFromWebApp([user.ss]);
-
-        const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(false).reply_markup)
-        return message_id
-      } else {
-        if (data[user.ss]) {
-          const message_id = await this.sendPhoto(user.chat_id, data[user.ss][0][3], data[user.ss][0][2], returnMenu(false).reply_markup)
+  async processReportForUser(user: User, reportData: any) {
+    if (user.type === 'registered' && user.ss) {
+        if (reportData[user.ss]) {
+          const message_id = await this.sendPhoto(user.chat_id, reportData[user.ss][0][3], reportData[user.ss][0][2], returnMenu(false).reply_markup)
           return message_id
         }
-      }
     } 
   }
 
   async run(): Promise<void> {
     try {
       const currentHour = new Date().getHours() + 3;
-      const users = await this.getUsersForReport(currentHour, 'old_ss');
+      const users = await this.getUsersForReport(currentHour, 'registered');
 
       if (users.length > 0 ) {
         const ssList = users.map(user => user.ss).filter(ss => typeof ss === 'string');
         const reportData = await this.getReportsFromWebApp(ssList);
         for (const user of users) {
-          await this.processReportForUser(user, 'all', reportData)
+          await this.processReportForUser(user, reportData)
         }
       } else {
         console.log('No old users to report for this hour: '+currentHour);
@@ -149,9 +140,14 @@ export class ReportService {
     } 
   }
 
-  async runForUser(user: User) {
+  async runForUser(user: User, type: 'single' | 'all', ss?: string) {
     try {
-      await this.processReportForUser(user, 'one')
+      if (type === 'single' && ss) {
+        const reportData = await this.getReportsFromWebApp([ss]);
+        await this.processReportForUser(user, reportData)
+      } else {
+
+      }
     } catch (error) {
       console.error('Error running report for user:', error);
     }

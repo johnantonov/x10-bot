@@ -56,6 +56,7 @@ export const cbs = {
   changeTime: 'changeTime_',
   editReportProducts: 'editReportProducts_',
   editReportName: 'editReportName_',
+  offConnection: 'offConnection_',
 }
 
 export const buttons = {
@@ -66,8 +67,9 @@ export const buttons = {
   changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime + connection } },
   getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow + connection } },
   editReportProducts: (connection: string) => { return  { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts + connection } },
-  editReportName: (connection: string) => { return  { text: '✏️ Настроить товары в отчете', callback_data: cbs.editReportName + connection } },
+  editReportName: (connection: string) => { return  { text: '✏️ Название подключения', callback_data: cbs.editReportName + connection } },
   offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable + connection } },
+  offConnection: (connection: string) => { return  { text: '🛑 Удалить подключение', callback_data: cbs.offConnection + connection } },
   getAllReportsNow: { text: '📂 Сформировать отчеты сейчас', callback_data: cbs.getAllReportsNow } ,
   myConnections: { text: '📊 Подключения', callback_data: cbs.myConnections } ,
   newConnection: { text: '➕ Новое подключение', callback_data: cbs.newConnection } ,
@@ -83,34 +85,37 @@ export const returnMenu = (edit: boolean = false) => {
   ])
 }
 
-export const mainOptions = (type?: user_type, waitReport?: boolean) => {
-  if (type?.startsWith('old')) {
-      const btns = [[buttons.getAllReportsNow], [buttons.myConnections]]
+export const mainOptions = (waitReport?: boolean, type?: user_type) => {
+  if (type?.startsWith('new')) {
+    return startOptions
+  } 
 
-      if (waitReport) {
-        btns[0] = [buttons.loading]
-      }
-
-      return new Options(btns);
-    }
-  
-  return startOptions
+  const btns = [[buttons.getAllReportsNow], [buttons.myConnections]]
+  if (waitReport) {
+    btns[0] = [buttons.loading]
+  }
+  return new Options(btns);
 } 
 
 const startOptions = new Options([
   [buttons.setOldUserType],
 ])
 
-export const connectionOptions = (connection: string) => {
-  const connectionBtns = new Options([
+export const connectionOptions = (connection: string, status: string) => {
+    const connectionBtns = [
     [buttons.getReportNow(connection)],
     [buttons.editReportProducts(connection)],
     [buttons.changeTime(connection)],
-    [buttons.editReportName(connection)],
-    [buttons.offTable(connection)],
-  ])
+    [buttons.editReportName(connection)]
+  ]
+  
+  if (status === 'on') {
+    connectionBtns.push([buttons.offTable(connection)])
+  } else {
+    connectionBtns.push([buttons.offConnection(connection)])
+  }
 
-  return connectionBtns;
+  return new Options(connectionBtns);
 }
 
 export const yesNo = (cbPart: string) => {
@@ -120,17 +125,17 @@ export const yesNo = (cbPart: string) => {
   ])
 }
 
-
-
-
 export async function generateConnectionsButtons(chat_id: number, page: number = 1): Promise<TelegramBot.InlineKeyboardButton[][]> {
   const connections = await users_db.getConnections(chat_id);
   const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [[]];
   const conectionsPerPage = 12
   const pages = Math.round(connections.length / conectionsPerPage)
 
-  connections.forEach((connect, i) => {
-    connectionButtons[0].push({ text: `${connect.title ? connect.title : connect.ss}`, callback_data: `connectionBtn_${connect.ss}` })
+  connections.forEach((conection, i) => {
+    connectionButtons[0].push({ 
+      text: `${conection.title ? conection.title : conection.ss}`, 
+      callback_data: `connectionBtn_${conection.ss}_${conection.type}_`, 
+    })
   })
 
   connectionButtons.push([buttons.newConnection, buttons.menuAndEdit])

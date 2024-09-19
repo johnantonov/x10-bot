@@ -66,7 +66,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     } else {
       await MS.delNewDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
-      const successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions('old'))
+      const successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions())
       await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };

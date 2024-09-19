@@ -29,7 +29,7 @@ class UsersModel extends BaseModel<User> {
     }
 
     const updateData: Partial<User> = {
-      type: 'old',
+      type: 'registered',
       ss,
     };
 

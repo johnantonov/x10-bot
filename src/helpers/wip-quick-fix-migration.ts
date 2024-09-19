@@ -19,6 +19,7 @@ export const migrations = [
     notification_time NUMERIC,
     title VARCHAR,
     type VARCHAR,
+    status VARCHAR DEFAULT 'off',
     report_on BOOLEAN,
     PRIMARY KEY (ss, chat_id),
     FOREIGN KEY (chat_id) REFERENCES users(chat_id) ON DELETE CASCADE);`, 
