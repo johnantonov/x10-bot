@@ -57,14 +57,15 @@ bot.on('message', async (msg: TelegramBot.Message) => {
   if (userState && waitingStates.includes(userState)) {
     response = await bot.sendMessage(chatId, "Проверяем...⌛️");
     const answer: AwaitingAnswer = await awaitingHandler(userMsg, userState, process.env)
-    msgs.push({ chatId, messageId: response.message_id })
+    msgs.push({ chatId, messageId: response.message_id, special: 'menu' })
 
     if (!answer.result) {
       await MS.saveMessages(msgs);
       return bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
     } else {
-      await bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
+      await MS.addNewAndDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
+      await bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
     }
   };
 
