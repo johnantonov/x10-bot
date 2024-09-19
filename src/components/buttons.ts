@@ -95,7 +95,7 @@ export const mainOptions = (type?: user_type, waitReport?: boolean) => {
       return new Options(btns);
     }
     return new Options([
-        [buttons.onTable],
+        [buttons.myConnections],
       ]);
     }
   
