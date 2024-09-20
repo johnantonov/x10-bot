@@ -23,12 +23,12 @@ export async function handleStartMenu(isNew: boolean = true, msg: UserMsg | User
       return MS.editMessage(msg.chatId, 
         specialMsgId ? specialMsgId : msg.messageId, 
         text,
-        mainOptions().reply_markup, img )
+        mainOptions(false, user.type).reply_markup, img )
     } else if (isUser && isNew) { 
-      const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions());
+      const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(false, user.type));
       await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
     } else {
-      await users_db.insert({ chat_id: msg.chatId, username: msg.username });
+      await users_db.insert({ chat_id: msg.chatId, username: msg.username, type: 'new' });
       console.log('insert new user into db: '+msg.chatId+" "+msg.username)
       const newMenu = await sendImageWithText(bot, msg.chatId, img, text, mainOptions(false, 'new'));
       await MS.saveMessage({ chatId: msg.chatId, messageId: newMenu.message_id, special: 'menu' })
