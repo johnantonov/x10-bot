@@ -106,6 +106,7 @@ export class ReportService {
       const url = updated_now ? process.env.SS_NOW_REPORTS_GETTER_URL : process.env.SS_REPORTS_GETTER_URL
 
       if (updated_now) {
+        console.log(ssList, updated_now)
         const response = axios.post(url!, {
           ssList: ssList,
           date: date,
@@ -113,6 +114,8 @@ export class ReportService {
         });      
         return null;
       }
+
+
 
       const response = await axios.post(url!, {
         ssList: ssList,
