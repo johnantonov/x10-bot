@@ -57,11 +57,11 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     const newCb = newConnectionData(data) 
     await bot.editMessageReplyMarkup(connectionOptions(newCb, data.sts, true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId, 'single', data.ss)
-    if (!reportMessageId) {
-      await MS.editMessage(chatId, messageId, 
-        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        returnConnectionMenu(newCb).reply_markup)
-    } 
+    // if (!reportMessageId) {
+    //   await MS.editMessage(chatId, messageId, 
+    //     'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+    //     returnConnectionMenu(newCb).reply_markup)
+    // } 
     await MS.delNewDelOld(msgs, chatId);
   }
 
@@ -117,32 +117,14 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   if (cb === cbs.getAllReportsNow) {
     await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId, 'all')
-    if (!reportMessageId) {
-      await MS.editMessage(chatId, messageId, 
-        'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        mainOptions().reply_markup)
-    } 
+    // if (!reportMessageId) {
+    //   await MS.editMessage(chatId, messageId, 
+    //     'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
+    //     mainOptions().reply_markup)
+    // } 
     await MS.delNewDelOld(msgs, chatId);
   }
 
-
-  // if (cb.startsWith(cbs.offTable)) {
-  //   if (cb === cbs.offTable) {
-  //     await MS.editMessage(chatId, messageId, 
-  //       'Вы уверены, что хотите отключить ежедневную рассылку?', 
-  //       yesNo(cbs.offTable).reply_markup)
-  //   } else {
-  //     let response;
-  //     if (cb === cbs.offTable + cbs.yes) {
-  //       await users_db.updateType(chatId, '', 'registered');
-  //       await MS.editMessage(chatId, messageId, 
-  //         'Вы успешно отключили ежедневную рассылку', 
-  //         mainOptions(false, 'registered').reply_markup, 'success.png')
-  //     } else {
-  //       await handleStartMenu(false, userCb, '/menu');
-  //     }
-  //   };
-  // };
 
 // *********** REPORT TIME *************
 
