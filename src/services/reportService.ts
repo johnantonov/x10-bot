@@ -101,12 +101,15 @@ export class ReportService {
   // Send SS values to Google Web App and receive report data
   async getReportsFromWebApp(ssList: string[]): Promise<Record<string, string>> {
     try {
-      console.log('webapp', ssList)
+      const date = getYesterdayDate()
+      console.log(date)
+
       const response = await axios.post(process.env.SS_REPORTS_GETTER_URL!, {
         ssList: ssList,
-        date: getYesterdayDate(),
+        date: date,
       });
-      console.log('webapp res', response.data)
+
+      console.log(response.data)
       return response.data;
     } catch (error) {
       console.error('Error fetching reports from Web App:', error);
@@ -114,9 +117,9 @@ export class ReportService {
     }
   }
 
-  async processReportForUser(user: User, reportData: any) {
-    if (user.type === 'registered' && reportData[0]) {
-        const message_id = await this.sendPhoto(user.chat_id, reportData[0][3], reportData[0][2], returnMenu(false).reply_markup)
+  async processReportForUser(chat_id: number, reportData: any) {
+    if (reportData[0]) {
+        const message_id = await this.sendPhoto(chat_id, reportData[0][3], reportData[0][2], returnMenu(false).reply_markup)
         return message_id
     } 
   }
@@ -124,16 +127,22 @@ export class ReportService {
   async run(): Promise<void> {
     try {
       const currentHour = new Date().getHours() + 3;
-      const users = await this.getUsersForReport(currentHour, 'registered');
+      const connections = await connections_db.getConnectionsByTime(currentHour);
 
-      if (users.length > 0 ) {
-        const ssList = users.map(user => user.ss).filter(ss => typeof ss === 'string');
+      
+      if (connections.length > 0 ) {
+        const dataForReports = getFormatConnections(connections)
+        const ssList = Object.keys(dataForReports)
         const reportData = await this.getReportsFromWebApp(ssList);
-        for (const user of users) {
-          await this.processReportForUser(user, reportData)
+        console.log(reportData)
+
+        for (const ss of ssList) {
+          for (const chat_id of dataForReports[ss]) {
+            await this.processReportForUser(chat_id, reportData[ss])
+          }
         }
       } else {
-        console.log('No old users to report for this hour: '+currentHour);
+        console.log('No connections to report for this hour: '+currentHour);
       }
     } catch (error) {
       console.error('Error in report service:', error);
@@ -144,13 +153,13 @@ export class ReportService {
     try {
       if (type === 'single' && ss) {
         const reportData = await this.getReportsFromWebApp([ss]);
-        await this.processReportForUser(user, reportData[ss])
+        await this.processReportForUser(user.chat_id, reportData[ss])
       } else {
         const rows = await users_db.getConnections(user.chat_id) 
         const ssList = rows.map(row => row.ss)
         const reportData = await this.getReportsFromWebApp(ssList);
         for (const ss of Object.keys(reportData)) {
-          await this.processReportForUser(user, reportData[ss] )
+          await this.processReportForUser(user.chat_id, reportData[ss])
         }
       }
     } catch (error) {
@@ -177,6 +186,8 @@ import { User, user_type } from '../dto/user';
 import { users_db } from '../../database/models/users';
 import { mainOptions, Options, returnMenu } from '../components/buttons';
 import { getYesterdayDate } from '../utils/dates';
+import { Connection, connections_db } from '../../database/models/connections';
+import { getFormatConnections } from '../utils/parse';
 
 export const reportService = new ReportService(pool);
 reportService.startCronJob();

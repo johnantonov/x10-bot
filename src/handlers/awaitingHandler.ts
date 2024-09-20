@@ -1,9 +1,10 @@
 import axios from "axios";
 import { AwaitingAnswer, UserMsg } from "../dto/msgData";
-import { rStates } from "../redis";
+import { redis, rStates } from "../redis";
 import { users_db } from "../../database/models/users";
 import dotenv from 'dotenv';
 import { connections_db } from "../../database/models/connections";
+import { RediceService } from "../bot";
 dotenv.config();
 
 export async function awaitingHandler(data: UserMsg, state: string) {
@@ -21,29 +22,33 @@ export async function awaitingHandler(data: UserMsg, state: string) {
     if (state === rStates.waitPremPass || state === rStates.waitNewConnection) {
       const responsePass = await checkConnection(data.text);
       const res = responsePass.data;
-  
       console.log('pass checker result: ' + JSON.stringify(res));
-  
       if (res.error) {
         return handleError("Возникла ошибка, попробуйте еще раз.");
       }
-  
       if (res.status === false) {
         return handleError(res.text);
       }
-  
       await connections_db.addConnection({ chat_id: data.chatId, ss: data.text });
-  
       if (state === rStates.waitPremPass) {
         await users_db.updateType(data.chatId, data.text);
-        return new AwaitingAnswer({ result: true, text: "Спасибо. Проверка пройдена успешно.", type: 'registered' });
+        return new AwaitingAnswer({ result: true, text: "✅ Спасибо. Проверка пройдена успешно.", type: 'registered' });
       } else if (state === rStates.waitNewConnection) {
-        return new AwaitingAnswer({ result: true, text: "Вы успешно подключили еще одну систему.", type: 'registered' });
+        return new AwaitingAnswer({ result: true, text: "✅ Вы успешно подключили еще одну систему.", type: 'registered' });
       }
   
       return handleError("Возникла ошибка, попробуйте еще раз.");
+
+    } else if (state.startsWith(rStates.waitConnectionTitle)) {
+      try {
+        const ss = state.split('?')[1]
+        await connections_db.updateTitle(data.chatId, ss, data.text)
+        return new AwaitingAnswer({ result: true, text: "✅ Подключение переименовано." });
+      } catch {
+        return handleError("Возникла ошибка, попробуйте еще раз.");
+      }
     }
-  
+
     return handleError("Возникла ошибка, попробуйте еще раз.");
   } catch (e) {
     console.error('Error in awaiting handler: '+e)

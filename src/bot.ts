@@ -55,7 +55,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
 
   const userState = await RediceService.getUserState(chatId);
 
-  if (userState && waitingStates.includes(userState)) {
+  if (userState && (waitingStates.includes(userState) || userState.startsWith(waitingStates[0]))) {
     response = await bot.sendMessage(chatId, "Проверяем...⌛️");
     const answer: AwaitingAnswer = await awaitingHandler(userMsg, userState)
     msgs.push({ chatId, messageId: response.message_id, special: 'menu' })

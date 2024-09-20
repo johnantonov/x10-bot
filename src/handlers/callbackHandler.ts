@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { MessageMS, UserCb } from "../dto/msgData";
-import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons } from "../components/buttons";
+import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu } from "../components/buttons";
 import { redis, rStates, ttls } from "../redis";
 import { users_db } from "../../database/models/users";
 import { connections_db } from "../../database/models/connections";
@@ -37,15 +37,14 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb === cbs.myConnections) {
     const buttons = await generateConnectionsButtons(chatId)
-    console.log('inline_keyboard:', buttons)
     await MS.editMessage(chatId, messageId, 
       'Выберите подключение:', 
       { inline_keyboard: buttons })
   }
 
   if (cb.startsWith(cbs.connectionBtn)) {
-    const data = parseConnectionData(cb)
-    const newCb = newConnectionData(data) 
+    const data = parseConnectionData(cb);
+    const newCb = newConnectionData(data); 
     await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
   }
 
@@ -62,19 +61,57 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     if (!reportMessageId) {
       await MS.editMessage(chatId, messageId, 
         'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-        connectionOptions(newCb, data.sts).reply_markup)
+        returnConnectionMenu(newCb).reply_markup)
     } 
     await MS.delNewDelOld(msgs, chatId);
   }
 
-  if (cb === cbs.editReportProducts) {
-    const user = await users_db.getUserById(chatId);
-    if (user) {
-      await MS.editMessage(chatId, messageId, 
-        `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${user.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
-        returnMenu(true).reply_markup, 'editProducts.jpg')
-    } 
+  if (cb.startsWith(cbs.editReportProducts)) {
+    const data = parseConnectionData(cb);
+    const newCb = newConnectionData(data);
+    await MS.editMessage(chatId, messageId, 
+      `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
+      connectionOptions(newCb, data.sts).reply_markup, 'editProducts.jpg');
   }
+    
+  if (cb.startsWith(cbs.editConnectionTitle)) {
+    const data = parseConnectionData(cb);
+    const newCb = newConnectionData(data);
+    await RS.setUserState(chatId, rStates.waitConnectionTitle+data.ss, ttls.usual)
+    await MS.editMessage(chatId, messageId, '✍️ Введите название подключения', returnConnectionMenu(newCb).reply_markup);
+  }
+
+  if (cb.startsWith(cbs.offConnection) || cb.startsWith(cbs.offTable)) {
+    const data = parseConnectionData(cb);
+    const newCb = newConnectionData(data);
+    const text = cb.startsWith(cbs.offConnection) ? 'удалить таблицу из подключений?' : 'отключить ежедневную рассылку?' 
+    const endText = cb.startsWith(cbs.offConnection) ? 'удалили таблицу. Вы сможете подключить ее повторно в меню "Подключения"' : 'отключили ежедневную рассылкую.' 
+    const action = data.an
+  
+    if (!action) {
+      return MS.editMessage(chatId, messageId, 
+        'Вы уверены, что хотите ' + text, 
+        yesNo(data.mn + "?" + newCb).reply_markup)
+    } else if (cb.endsWith(cbs.yes)) {
+      if (cb.startsWith(cbs.offConnection)) {
+        await connections_db.removeConnection(chatId, data.ss) 
+      } else {
+        await connections_db.updateNotificationTime(chatId, data.ss, 0)
+      }
+    } else {
+      return MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
+    }
+
+    await MS.editMessage(chatId, messageId, 
+      `✅ Вы успешно ` + endText, 
+      mainOptions(false).reply_markup)
+  }
+
+ if (cb.startsWith(cbs.returnConnection)) {
+  const data = parseConnectionData(cb);
+  const newCb = newConnectionData(data); 
+  await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
+ }  
 
 //*********************** ALL CONNECTIONS ***********************//
 
@@ -110,20 +147,24 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
 // *********** REPORT TIME *************
 
-  // if (cb.startsWith(cbs.changeTime)) {
-  //   if (cb === cbs.changeTime) {
-  //     await MS.editMessage(chatId, messageId, 
-  //       'Выберите время по МСК, когда вам будет удобно получать отчет:', 
-  //       { inline_keyboard: generateReportTimeButtons(cbs.changeTime) })
-  //   } else {
-  //     const [ selectedTime, ss ] = parseCallbackData(cb, 'report_time')
-  //     const connection_callback = ss + chatId
-  //     // await connections_db.updateReportTime(chatId, ss, selectedTime)
-  //     await MS.editMessage(chatId, messageId, 
-  //       `Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-  //       connectionOptions(connection_callback, ).reply_markup)
-  //   }
-  // };
+  if (cb.startsWith(cbs.changeTime)) {
+    const data = parseConnectionData(cb)
+    const newData = newConnectionData(data);
+    const selectedTime = +data.an
+
+    if (!selectedTime) {
+      await MS.editMessage(chatId, messageId, 
+        'Выберите время по МСК, когда вам будет удобно получать отчет:', 
+        { inline_keyboard: generateReportTimeButtons(cb) })
+    } else {
+      await connections_db.updateNotificationTime(chatId, data.ss, selectedTime)
+      await MS.editMessage(chatId, messageId, 
+        `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
+        connectionOptions(newData, 'on').reply_markup)
+    };
+
+  }
+    
 
   return bot.answerCallbackQuery(query.id);
 }

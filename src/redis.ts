@@ -31,10 +31,17 @@ export class redis {
   }
 }
 
-export const waitingStates = ['awaiting_article', 'awaiting_wb_api_key', 'awaiting_prem_pass', 'awaiting_cost_art', 'awaiting_title_art', 'awaiting_new_connection']
+export const waitingStates = [
+  'awaiing_connection_title?', 
+  'awaiting_wb_api_key', 
+  'awaiting_prem_pass', 
+  'awaiting_cost_art', 
+  'awaiting_title_art', 
+  'awaiting_new_connection'
+]
 
 export const rStates = {
-  waitArticle: waitingStates[0],
+  waitConnectionTitle: waitingStates[0],
   waitWbApiKey: waitingStates[1],
   waitPremPass: waitingStates[2],
   waitCostArt: waitingStates[3],

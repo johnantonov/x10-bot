@@ -33,19 +33,19 @@ export async function setBotCommands(bot: TelegramBot) {
     await bot.setMyCommands([
       { command: '/menu', description: 'Главное меню' }
     ]);
-    console.log('Команды установлены.');
+    console.log('Commands set');
   } catch (error) {
-    console.error('Ошибка при установке команд:', error);
+    console.error('Error to set command', error);
   }
 }
 
 export const cbs = {
   returnMain: 'return_main',
   setOldUserType: 'set_old_user_type',
-  onTable: 'turn_on_ss',
-  offTable: 'turn_off_ss',
-  yes: '_yes',
-  no: '_no',
+  onTable: 'ton?',
+  offTable: 'tof?',
+  yes: '?yes',
+  no: '?no',
   menu: 'menu',
   menuAndEdit: 'menu_edit',
   goPrem: 'go_prem',
@@ -57,8 +57,9 @@ export const cbs = {
   getReportNow: 'grn?',
   changeTime: 'ct?',
   editReportProducts: 'erp?',
-  editReportName: 'ern?',
+  editConnectionTitle: 'ecn?',
   offConnection: 'offc?',
+  returnConnection: 'rc?',
 }
 
 export const buttons = {
@@ -66,12 +67,13 @@ export const buttons = {
   onTable: { text: '📂 Подключить телеграм отчет', callback_data: cbs.onTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
   menuAndEdit: { text: '↩️ Меню', callback_data: cbs.menuAndEdit },
-  changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime + connection } },
+  changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчета', callback_data: cbs.changeTime + connection } },
   getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow + connection } },
   editReportProducts: (connection: string) => { return  { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts + connection } },
-  editReportName: (connection: string) => { return  { text: '✏️ Название подключения', callback_data: cbs.editReportName + connection } },
+  editReportName: (connection: string) => { return  { text: '✏️ Название подключения', callback_data: cbs.editConnectionTitle + connection } },
   offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable + connection } },
   offConnection: (connection: string) => { return  { text: '🛑 Удалить подключение', callback_data: cbs.offConnection + connection } },
+  returnConnection: (connection: string) => { return  { text: '↩️ К подключению', callback_data: cbs.returnConnection + connection } },
   getAllReportsNow: { text: '📂 Сформировать отчеты сейчас', callback_data: cbs.getAllReportsNow } ,
   myConnections: { text: '📊 Подключения', callback_data: cbs.myConnections } ,
   newConnection: { text: '➕ Новое подключение', callback_data: cbs.newConnection } ,
@@ -108,7 +110,7 @@ export const connectionOptions = (connection: string, status: string, waitReport
     [buttons.getReportNow(connection)],
     [buttons.editReportProducts(connection)],
     [buttons.changeTime(connection)],
-    [buttons.editReportName(connection)]
+    [buttons.editReportName(connection)],
   ]
   
   if (status === 'on') {
@@ -116,12 +118,19 @@ export const connectionOptions = (connection: string, status: string, waitReport
   } else {
     connectionBtns.push([buttons.offConnection(connection)])
   }
+  
+  connectionBtns.push([buttons.menuAndEdit])
 
   if (waitReport) {
     connectionBtns[0] = [buttons.loading]
   }
 
   return new Options(connectionBtns);
+}
+
+export const returnConnectionMenu = (connection: string) => {
+  const btn = buttons.returnConnection(connection)
+  return new Options([[btn]])
 }
 
 export const yesNo = (cbPart: string) => {
@@ -133,25 +142,31 @@ export const yesNo = (cbPart: string) => {
 
 export async function generateConnectionsButtons(chat_id: number, page: number = 1): Promise<TelegramBot.InlineKeyboardButton[][]> {
   const connections = await users_db.getConnections(chat_id);
-  const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [[]];
-  const conectionsPerPage = 12
-  const pages = Math.round(connections.length / conectionsPerPage)
+  const connectionButtons: TelegramBot.InlineKeyboardButton[][] = [];
+  const connectionsPerPage = 12; 
+  const pages = Math.ceil(connections.length / connectionsPerPage); 
 
-  connections.forEach((conection, i) => {
+  connections.forEach((connection, i) => {
     const data: ConnectionCallbackData = {
       mn: cbs.connectionBtn,
-      ss: conection.ss,
-      sts: conection.status,
-      an: ""
-    }
-    
-    connectionButtons[0].push({ 
-      text: `${conection.title ? conection.title : conection.ss}`, 
-      callback_data: data.mn+newConnectionData(data), 
-    })
-  })
+      ss: connection.ss,
+      sts: connection.status,
+      an: "",
+    };
 
-  connectionButtons.push([buttons.newConnection, buttons.menuAndEdit])
+    const rowIndex = Math.floor(i / 3);
+
+    if (!connectionButtons[rowIndex]) {
+      connectionButtons[rowIndex] = [];
+    }
+
+    connectionButtons[rowIndex].push({
+      text: `${connection.title ? connection.title : connection.ss}`,
+      callback_data: data.mn + newConnectionData(data),
+    });
+  });
+
+  connectionButtons.push([buttons.newConnection, buttons.menuAndEdit]);
 
   return connectionButtons;
 }
@@ -167,7 +182,7 @@ export function generateReportTimeButtons(changeTime: string, page: number = 0):
     if (!times[row]) {
       times[row] = [];
     }
-    times[row].push({ text: `${i}:00`, callback_data: `${changeTime}${i}` });
+    times[row].push({ text: `${i}:00`, callback_data: `${changeTime}?${i}` });
   }
 
   /*
