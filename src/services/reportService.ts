@@ -143,14 +143,11 @@ export class ReportService {
   async runForUser(user: User, type: 'single' | 'all', ss?: string) {
     try {
       if (type === 'single' && ss) {
-        console.log(ss)
         const reportData = await this.getReportsFromWebApp([ss]);
         await this.processReportForUser(user, reportData[ss])
       } else {
         const rows = await users_db.getConnections(user.chat_id) 
-        console.log(rows)
         const ssList = rows.map(row => row.ss)
-        console.log(ssList)
         const reportData = await this.getReportsFromWebApp(ssList);
         for (const ss of Object.keys(reportData)) {
           await this.processReportForUser(user, reportData[ss] )
