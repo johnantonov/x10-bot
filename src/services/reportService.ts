@@ -158,7 +158,7 @@ export class ReportService {
       } else {
         const rows = await users_db.getConnections(user.chat_id) 
         const ssList = rows.map(row => row.ss)
-        const reportData = await this.getReportsFromWebApp(ssList);
+        const reportData = await this.getReportsFromWebApp(ssList, true);
         for (const ss of Object.keys(reportData)) {
           await this.processReportForUser(user.chat_id, reportData[ss])
         }
