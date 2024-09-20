@@ -114,9 +114,7 @@ export class ReportService {
         });      
         return null;
       }
-
-
-
+      
       const response = await axios.post(url!, {
         ssList: ssList,
         date: date,

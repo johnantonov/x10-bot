@@ -133,6 +133,12 @@ export const returnConnectionMenu = (connection: string) => {
   return new Options([[btn]])
 }
 
+export const btnsAfterNewConnection = (connection: string) => {
+  const menu = buttons.menu
+  const newName = buttons.editReportName(connection)
+  return new Options([[newName], [menu]])
+}
+
 export const yesNo = (cbPart: string) => {
   return new Options([
     [{ text: '✅ Да', callback_data: cbPart + cbs.yes }],

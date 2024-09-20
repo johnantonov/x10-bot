@@ -43,6 +43,7 @@ export class AwaitingAnswer {
   buttons: Options | undefined;
   result: Boolean;
   type?: user_type;
+  data?: any;
 
   [key: string]: any;
 
@@ -51,11 +52,13 @@ export class AwaitingAnswer {
     buttons?: Options | undefined,
     result: Boolean,
     type?: user_type
+    data?: any
   }) {
     this.text = data.text;
     this.buttons = data.buttons;
     this.result = data.result;
     this.type = data.type
+    this.data = data.data
   }
 }
 

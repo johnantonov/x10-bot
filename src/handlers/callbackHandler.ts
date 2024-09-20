@@ -125,13 +125,12 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     await MS.delNewDelOld(msgs, chatId);
   }
 
-
 // *********** REPORT TIME *************
 
   if (cb.startsWith(cbs.changeTime)) {
     const data = parseConnectionData(cb)
     const newData = newConnectionData(data);
-    const selectedTime = +data.an
+    const selectedTime = +data.an!
 
     if (!selectedTime) {
       await MS.editMessage(chatId, messageId, 

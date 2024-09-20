@@ -1,6 +1,6 @@
 export interface ConnectionCallbackData {
-  mn: string
+  mn?: string
   ss: string
   sts: string
-  an: string
+  an?: string
 }
