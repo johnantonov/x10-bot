@@ -2,7 +2,6 @@ import TelegramBot from "node-telegram-bot-api";
 import { MessageMS, UserCb } from "../dto/msgData";
 import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu } from "../components/buttons";
 import { redis, rStates, ttls } from "../redis";
-import { users_db } from "../../database/models/users";
 import { connections_db } from "../../database/models/connections";
 import { handleStartMenu } from "../components/answers";
 import { RediceService } from "../bot";

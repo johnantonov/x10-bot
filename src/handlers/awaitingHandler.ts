@@ -32,7 +32,7 @@ export async function awaitingHandler(data: UserMsg, state: string) {
       await connections_db.addConnection({ chat_id: data.chatId, ss: data.text });
       if (state === rStates.waitPremPass) {
         await users_db.updateType(data.chatId, data.text);
-        return new AwaitingAnswer({ result: true, text: "✅ Спасибо. Проверка пройдена успешно.", type: 'registered' });
+        return new AwaitingAnswer({ result: true, text: "✅ Спасибо. Таблица успешно подключена.", type: 'registered' });
       } else if (state === rStates.waitNewConnection) {
         return new AwaitingAnswer({ result: true, text: "✅ Вы успешно подключили еще одну систему.", type: 'registered' });
       }
@@ -42,7 +42,7 @@ export async function awaitingHandler(data: UserMsg, state: string) {
     } else if (state.startsWith(rStates.waitConnectionTitle)) {
       try {
         const ss = state.split('?')[1]
-        await connections_db.updateTitle(data.chatId, ss, data.text)
+        await connections_db.updateTitle(data.chatId, ss, '⚙️'+data.text)
         return new AwaitingAnswer({ result: true, text: "✅ Подключение переименовано." });
       } catch {
         return handleError("Возникла ошибка, попробуйте еще раз.");

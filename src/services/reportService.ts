@@ -99,12 +99,13 @@ export class ReportService {
   }
 
   // Send SS values to Google Web App and receive report data
-  async getReportsFromWebApp(ssList: string[]): Promise<Record<string, string>> {
+  async getReportsFromWebApp(ssList: string[], updated_now: boolean = false): Promise<Record<string, string>> {
     try {
       const date = getYesterdayDate()
       console.log(date)
+      const url = updated_now ? process.env.SS_NOW_REPORTS_GETTER_URL : process.env.SS_REPORTS_GETTER_URL
 
-      const response = await axios.post(process.env.SS_REPORTS_GETTER_URL!, {
+      const response = await axios.post(url!, {
         ssList: ssList,
         date: date,
       });
@@ -152,7 +153,7 @@ export class ReportService {
   async runForUser(user: User, type: 'single' | 'all', ss?: string) {
     try {
       if (type === 'single' && ss) {
-        const reportData = await this.getReportsFromWebApp([ss]);
+        const reportData = await this.getReportsFromWebApp([ss], true);
         await this.processReportForUser(user.chat_id, reportData[ss])
       } else {
         const rows = await users_db.getConnections(user.chat_id) 

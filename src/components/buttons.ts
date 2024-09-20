@@ -75,10 +75,10 @@ export const buttons = {
   offConnection: (connection: string) => { return  { text: '🛑 Удалить подключение', callback_data: cbs.offConnection + connection } },
   returnConnection: (connection: string) => { return  { text: '↩️ К подключению', callback_data: cbs.returnConnection + connection } },
   getAllReportsNow: { text: '📂 Сформировать отчеты сейчас', callback_data: cbs.getAllReportsNow } ,
-  myConnections: { text: '📊 Подключения', callback_data: cbs.myConnections } ,
+  myConnections: { text: '📊 Подключенные таблицы', callback_data: cbs.myConnections } ,
   newConnection: { text: '➕ Новое подключение', callback_data: cbs.newConnection } ,
   loading: { text: '⏳ Загрузка...', callback_data: cbs.loading },
-  setOldUserType: { text: '👑 Зарегистрировать', callback_data: cbs.setOldUserType },
+  setOldUserType: { text: '➕ Новое подключение', callback_data: cbs.setOldUserType },
 }
 
 
