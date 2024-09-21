@@ -130,7 +130,7 @@ export class ReportService {
 
   async processReportForUser(chat_id: number, reportData: any) {
     if (reportData[0]) {
-        const message =  getFormatReportTitle(reportData[0][1]) + '\n' + reportData[0][3]
+        const message =  getFormatReportTitle(reportData[0][1]) + '\n\n' + reportData[0][3]
         const message_id = await this.sendPhoto(chat_id, reportData[0][4] , message, returnMenu(false).reply_markup)
         return message_id
     } 

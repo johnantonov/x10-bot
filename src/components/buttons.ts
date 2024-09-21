@@ -71,7 +71,7 @@ export const buttons = {
   changeTime: { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime },
   getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow + connection } },
   editReportProducts: (connection: string) => { return  { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts + connection } },
-  editReportName: (connection: string) => { return  { text: '✏️ Название подключения', callback_data: cbs.editConnectionTitle + connection } },
+  editReportName: (connection: string) => { return  { text: '✏️ Переименовать подключение', callback_data: cbs.editConnectionTitle + connection } },
   offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: cbs.offTable + connection } },
   offConnection: (connection: string) => { return  { text: '🛑 Удалить подключение', callback_data: cbs.offConnection + connection } },
   returnConnection: (connection: string) => { return  { text: '↩️ К подключению', callback_data: cbs.returnConnection + connection } },
