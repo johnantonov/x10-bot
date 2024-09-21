@@ -95,7 +95,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       if (cb.startsWith(cbs.offConnection)) {
         await connections_db.removeConnection(chatId, data.ss) 
       } else {
-        await connections_db.updateNotificationTime(chatId, data.ss, 0)
+        await connections_db.updateNotificationTime(chatId, 0)
       }
     } else {
       return MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
@@ -128,19 +128,21 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 // *********** REPORT TIME *************
 
   if (cb.startsWith(cbs.changeTime)) {
-    const data = parseConnectionData(cb)
-    const newData = newConnectionData(data);
-    const selectedTime = +data.an!
+    // const data = parseConnectionData(cb)
+    // const newData = newConnectionData(data);
+    // const selectedTime = +data.an!
+    const selectedTime = cb.split('?')[1]
 
     if (!selectedTime) {
       await MS.editMessage(chatId, messageId, 
         'Выберите время по МСК, когда вам будет удобно получать отчет:', 
         { inline_keyboard: generateReportTimeButtons(cb) })
     } else {
-      await connections_db.updateNotificationTime(chatId, data.ss, selectedTime)
+      await connections_db.updateNotificationTime(chatId, selectedTime)
       await MS.editMessage(chatId, messageId, 
         `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-        connectionOptions(newData, 'on').reply_markup)
+        // connectionOptions(newData, 'on').reply_markup)
+        mainOptions().reply_markup)
     };
 
   }

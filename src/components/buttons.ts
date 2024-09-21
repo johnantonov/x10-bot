@@ -67,7 +67,8 @@ export const buttons = {
   onTable: { text: '📂 Подключить телеграм отчет', callback_data: cbs.onTable },
   menu: { text: '↩️ Меню', callback_data: cbs.menu },
   menuAndEdit: { text: '↩️ Меню', callback_data: cbs.menuAndEdit },
-  changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчета', callback_data: cbs.changeTime + connection } },
+  // changeTime: (connection: string) => { return  { text: '🕘 Настроить расписание отчета', callback_data: cbs.changeTime + connection } },
+  changeTime: { text: '🕘 Настроить расписание отчетов', callback_data: cbs.changeTime },
   getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: cbs.getReportNow + connection } },
   editReportProducts: (connection: string) => { return  { text: '⚙️ Настроить товары в отчете', callback_data: cbs.editReportProducts + connection } },
   editReportName: (connection: string) => { return  { text: '✏️ Название подключения', callback_data: cbs.editConnectionTitle + connection } },
@@ -94,7 +95,12 @@ export const mainOptions = (waitReport?: boolean, type?: user_type) => {
     return startOptions
   } 
 
-  const btns = [[buttons.getAllReportsNow], [buttons.myConnections]]
+  const btns = [
+    [buttons.getAllReportsNow], 
+    [buttons.myConnections],
+    [buttons.changeTime]
+  ]
+
   if (waitReport) {
     btns[0] = [buttons.loading]
   }
@@ -109,7 +115,7 @@ export const connectionOptions = (connection: string, status: string, waitReport
     const connectionBtns = [
     [buttons.getReportNow(connection)],
     [buttons.editReportProducts(connection)],
-    [buttons.changeTime(connection)],
+    // [buttons.changeTime(connection)],
     [buttons.editReportName(connection)],
   ]
   
@@ -188,7 +194,7 @@ export function generateReportTimeButtons(changeTime: string, page: number = 0):
     if (!times[row]) {
       times[row] = [];
     }
-    times[row].push({ text: `${i}:00`, callback_data: `${changeTime}?${i}` });
+    times[row].push({ text: `${i}:00`, callback_data: `${changeTime}${i}` });
   }
 
   /*

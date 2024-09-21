@@ -130,7 +130,8 @@ export class ReportService {
 
   async processReportForUser(chat_id: number, reportData: any) {
     if (reportData[0]) {
-        const message_id = await this.sendPhoto(chat_id, reportData[0][3], reportData[0][2], returnMenu(false).reply_markup)
+        const message =  getFormatReportTitle(reportData[0][1]) + '\n' + reportData[0][3]
+        const message_id = await this.sendPhoto(chat_id, reportData[0][4] , message, returnMenu(false).reply_markup)
         return message_id
     } 
   }
@@ -203,6 +204,7 @@ import { mainOptions, Options, returnMenu } from '../components/buttons';
 import { getYesterdayDate } from '../utils/dates';
 import { Connection, connections_db } from '../../database/models/connections';
 import { getFormatConnections } from '../utils/parse';
+import { getFormatReportTitle } from '../utils/string';
 
 export const reportService = new ReportService(pool);
 reportService.startCronJob();

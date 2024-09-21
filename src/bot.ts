@@ -68,12 +68,12 @@ bot.on('message', async (msg: TelegramBot.Message) => {
       await MS.delNewDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
       let successResponse;
-      if ( userState === rStates.waitPremPass || userState === rStates.waitNewConnection ) {
-        const connectionCb = newConnectionData({ ss: answer.data, sts: 'off' })
-        successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, btnsAfterNewConnection(connectionCb))
-      } else {
+      // if ( userState === rStates.waitPremPass || userState === rStates.waitNewConnection ) {
+      //   const connectionCb = newConnectionData({ ss: answer.data, sts: 'off' })
+      //   successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, btnsAfterNewConnection(connectionCb))
+      // } else {
         successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions())
-      }
+      // }
       await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };
