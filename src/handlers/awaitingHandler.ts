@@ -31,9 +31,9 @@ export async function awaitingHandler(data: UserMsg, state: string) {
       await connections_db.addConnection({ chat_id: data.chatId, ss: data.text });
       if (state === rStates.waitPremPass) {
         await users_db.updateType(data.chatId, data.text);
-        return new AwaitingAnswer({ result: true, text: "✅ Спасибо. Таблица успешно подключена. Вы можете придумать название ей название.", type: 'registered', data: data.text});
+        return new AwaitingAnswer({ result: true, text: "✅ Спасибо. Таблица успешно подключена. Вы можете придумать ей название.", type: 'registered', data: data.text});
       } else if (state === rStates.waitNewConnection) {
-        return new AwaitingAnswer({ result: true, text: "✅ Вы успешно подключили еще одну систему.  Вы можете придумать название ей название.", type: 'registered', data:  data.text});
+        return new AwaitingAnswer({ result: true, text: "✅ Вы успешно подключили еще одну систему. Вы можете придумать ей название.", type: 'registered', data:  data.text});
       }
   
       return handleError("Возникла ошибка, попробуйте еще раз.");
