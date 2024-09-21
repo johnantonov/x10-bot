@@ -57,11 +57,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     const newCb = newConnectionData(data) 
     await bot.editMessageReplyMarkup(connectionOptions(newCb, data.sts, true).reply_markup, { chat_id: chatId, message_id: messageId })
     const reportMessageId = await runPersonReport(chatId, 'single', data.ss)
-    // if (!reportMessageId) {
-    //   await MS.editMessage(chatId, messageId, 
-    //     'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-    //     returnConnectionMenu(newCb).reply_markup)
-    // } 
     await MS.delNewDelOld(msgs, chatId);
   }
 
@@ -116,21 +111,12 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
   if (cb === cbs.getAllReportsNow) {
     await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
-    const reportMessageId = await runPersonReport(chatId, 'all')
-    // if (!reportMessageId) {
-    //   await MS.editMessage(chatId, messageId, 
-    //     'Произошла ошибка при формировании отчета, попробуйте позже. 😢', 
-    //     mainOptions().reply_markup)
-    // } 
+    await runPersonReport(chatId, 'all')
     await MS.delNewDelOld(msgs, chatId);
   }
 
 // *********** REPORT TIME *************
-
   if (cb.startsWith(cbs.changeTime)) {
-    // const data = parseConnectionData(cb)
-    // const newData = newConnectionData(data);
-    // const selectedTime = +data.an!
     const selectedTime = cb.split('?')[1]
 
     if (!selectedTime) {
@@ -141,7 +127,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       await connections_db.updateNotificationTime(chatId, selectedTime)
       await MS.editMessage(chatId, messageId, 
         `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-        // connectionOptions(newData, 'on').reply_markup)
         mainOptions().reply_markup)
     };
 

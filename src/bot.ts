@@ -1,14 +1,13 @@
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
-import { btnsAfterNewConnection, mainOptions, setBotCommands } from './components/buttons';
-import { redis,  rStates,  waitingStates } from './redis';
-import { getHelp, handleStartMenu, sendImageWithText, } from './components/answers';
+import { mainOptions, setBotCommands } from './components/buttons';
+import { redis, waitingStates } from './redis';
+import { handleStartMenu, sendImageWithText, } from './components/answers';
 import { AwaitingAnswer, MessageMS, UserMsg } from './dto/msgData';
 import { MessageService } from './services/messageService';
 import { callbackHandler } from './handlers/callbackHandler';
 import { awaitingHandler } from './handlers/awaitingHandler';
 import { handleAdminCommand } from './handlers/adminHandler';
-import { newConnectionData } from './utils/parse';
 
 dotenv.config();
 const token = process.env.TELEGRAM_TOKEN;
@@ -67,13 +66,7 @@ bot.on('message', async (msg: TelegramBot.Message) => {
     } else {
       await MS.delNewDelOld(msgs, chatId);
       await RediceService.deleteUserState(chatId)
-      let successResponse;
-      // if ( userState === rStates.waitPremPass || userState === rStates.waitNewConnection ) {
-      //   const connectionCb = newConnectionData({ ss: answer.data, sts: 'off' })
-      //   successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, btnsAfterNewConnection(connectionCb))
-      // } else {
-        successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions())
-      // }
+      let successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions())
       await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
     }
   };

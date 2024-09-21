@@ -1,7 +1,6 @@
 import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
 import { MessageMS } from '../dto/msgData';
-import { resolve } from 'path';
 import { getPath } from '../utils/parse';
 import axios from 'axios';
 import dotenv from 'dotenv';
