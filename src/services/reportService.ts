@@ -41,7 +41,7 @@ app.listen(port, () => {
  * @param {string} ss - spreadsheet id
  */
 export async function runPersonReport(chat_id: number, type: 'single' | 'all', ss?: string ): Promise<number | null> {
-  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id, type, ss })
+  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chat_id, type, ss })
     .then(response => {
       console.log('Report initiated: ', response.data);
       return response.data; 
@@ -101,14 +101,11 @@ export class ReportService {
       const url = updated_now ? process.env.SS_NOW_REPORTS_GETTER_URL : process.env.SS_REPORTS_GETTER_URL
 
       if (updated_now) {
-        console.log(ssList, updated_now)
         const response = axios.post(url!, { ssList, date, id: updated_now });      
         return null;
       }
       
       const response = await axios.post(url!, { ssList, date: date });      
-
-      console.log(response.data)
       return response.data;
     } catch (error) {
       console.error('Error fetching reports from Web App:', error);
@@ -134,7 +131,6 @@ export class ReportService {
         const dataForReports = getFormatConnections(connections)
         const ssList = Object.keys(dataForReports)
         const reportData = await this.getReportsFromWebApp(ssList);
-        console.log(reportData)
 
         for (const ss of ssList) {
           for (const chat_id of dataForReports[ss]) {

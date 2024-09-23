@@ -37,10 +37,6 @@ export class CallbackProcessor {
     if (this.editReportProducts()) {
       return "edit products";
     }
-    
-    if (this.editReportProducts()) {
-      return "edit products";
-    }
 
     if (this.off()) {
       return "off";
@@ -56,6 +52,10 @@ export class CallbackProcessor {
 
     if (this.changeTime()) {
       return "change time";
+    }
+
+    if (this.changeTitle()) {
+      return "change title";
     }
 
     return null; // error
@@ -103,6 +103,10 @@ export class CallbackProcessor {
 
   private changeTime(): boolean {
     return this.userCallbackData.startsWith(CallbackData.changeTime as string)
+  }
+
+  private changeTitle(): boolean {
+    return this.userCallbackData.startsWith(CallbackData.editConnectionTitle as string)
   }
 
 }

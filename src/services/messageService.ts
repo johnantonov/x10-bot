@@ -70,8 +70,7 @@ export class MessageService {
   /**
    * delete all current msgs and new msgs without saving
    */ 
-  async delNewDelOld(msgs: MessageMS[], chat_id: number, exclude?: string) {
-    // await this.deleteAllMessages(chat_id, exclude);
+  async deleteAllNewMessages(msgs: MessageMS[], chat_id: number, exclude?: string) {
     const deletePromises = msgs.map(async (msg) => {
       try {
         await this.bot.deleteMessage(chat_id, msg.message_id);
@@ -99,6 +98,14 @@ export class MessageService {
     return messages.map(message => JSON.parse(message));
   }
 
+  /**
+   * delete old and new messages
+   */
+  async deleteOldAndNewMessages(chat_id: number, msgs: MessageMS[], exclude?: string) {
+    await this.deleteAllMessages(chat_id, exclude)
+    await this.deleteAllNewMessages(msgs, chat_id)
+  }
+
 /**
  * delete all msgs from chat
  */
@@ -114,7 +121,6 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
           return; 
         }
         await this.bot.deleteMessage(chat_id, message.message_id);
-        console.log('DELETE', message.message_id)
       } catch (error) {
         console.error(`Error during delete message ${message.message_id}:`, error);
       }
@@ -166,14 +172,30 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
         });
       }
     } catch (error) {
-      console.error(`Error editing msg, ID: ${message_id} - `, error);
+      if (!newText || newText === " ") {
+        newText = undefined
+      }
+
+      const imagePath = media ? getPath(media) : getPath(images.hello)
+      const user = await users_db.getUserById(chat_id as number);
+
+      if (user) {
+        this.clearMessages(user.chat_id)
+        const message = await this.bot.sendPhoto(user.chat_id, imagePath, { caption: newText, reply_markup: mainOptions(false, user.type ?? 'new')})
+        await this.saveMessage({ chat_id: user.chat_id, message_id: message.message_id, special: 'menu' })
+      }
+
+      const errorMessage = (error as any).response?.body?.description || (error as Error).message || 'Unknown error';
+      console.error(`Error editing msg, ID: ${message_id} - ${errorMessage.substring(0, 200)}`);
     }
   }
 }
 
 import fs from 'fs';
 import FormData from 'form-data';
-import { Options } from '../components/botButtons';
+import { mainOptions, Options } from '../components/botButtons';
+import { images } from '../dto/images';
+import { users_db } from '../../database/models/users';
 
 
 /**

@@ -82,7 +82,7 @@ async function checkConnection(pass: string) {
  * @param {string} state - user state from redis
  */
 export function isKey(text: string, state: string): Boolean {
-  if (state === rStates.waitPremPass) {
+  if ([rStates.waitPremPass, rStates.waitNewConnection].includes(state)) {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d_-]{20,}$/.test(text);
   }
   

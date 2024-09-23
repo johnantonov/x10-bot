@@ -3,6 +3,8 @@ import { reportService } from "../services/reportService"
 import * as dotenv from 'dotenv';
 import pool from "../../database/db"
 import { migrations } from "../helpers/wip-quick-fix-migration";
+import { users_db } from "../../database/models/users";
+import axios from "axios";
 
 dotenv.config();
 
@@ -77,10 +79,24 @@ export async function handleAdminCommand(chat_id: number, command: string, bot: 
       } catch (e) {
         console.error('error during migration process')
       }
-
     }
 
     // send all data to spreadsheet db
+    if (action.startsWith('send_all_data')) {
+      const data = await users_db.getAllData();
+    
+      try {
+        const response = await axios.post(process.env.SS_ALL_DATA_URL!, data, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+    
+        console.log('All data sent to web app: ', response.data);
+      } catch (error) {
+        console.error('Error sending all data: ', error);
+      }
+    }
     
   } catch (e) {
     console.error('error in admin handler: '+e)

@@ -45,21 +45,16 @@ export async function handleStartMenu(msg: UserMsg | UserCallback, command: '/me
       if (!isNewMsg) {
         if (!menuId) {
           await sendNewMenu(chat_id, img, text, user.type)
-          // const newMenu = await sendImageWithText(bot, chat_id, img, text, mainOptions(false, user.type));
-          // await MS.saveMessage({ chat_id: chat_id, message_id: newMenu.message_id, special: 'menu' })
           return console.error('handleStartMenu: error to get menu id:', msg, command, isNewMsg, menuId)
         }
+        console.log(menuId)
         return MS.editMessage(chat_id, menuId, text, mainOptions(false, user.type))
       } else {
         await sendNewMenu(chat_id, img, text, user.type)
-        // const newMenu = await sendImageWithText(bot, chat_id, img, text, mainOptions(false, user.type));
-        // return MS.saveMessage({ chat_id: chat_id, message_id: newMenu.message_id, special: 'menu' })
       }
     } else {
       await users_db.insert({ chat_id: chat_id, username: msg.username, type: 'new' });
       await sendNewMenu(chat_id, img, text, 'new')
-      // const newMenu = await sendImageWithText(bot, chat_id, img, text, mainOptions(false, 'new'));
-      // await MS.saveMessage({ chat_id: chat_id, message_id: newMenu.message_id, special: 'menu' })
       console.log('insert new user into db: ', chat_id, msg.username)
     }
   } catch (error) {
@@ -106,7 +101,6 @@ export async function sendNewMenu(chat_id: number, img: string, caption: string,
   const keyboard = mainOptions(false, userType).inline_keyboard
   const newMenu = await sendImageWithText(bot, chat_id, img, caption, keyboard);
   if (newMenu) {
-    console.log('new menu', newMenu)
     await MS.saveMessage({ chat_id, message_id: newMenu.message_id, special: 'menu' });
   }
 }

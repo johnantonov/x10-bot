@@ -10,4 +10,5 @@ export type CallbackAction =
   "return connection menu" | 
   "get all reports" |
   "change time" |
+  "change title" |
   null;

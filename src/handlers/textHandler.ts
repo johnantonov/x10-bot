@@ -8,8 +8,7 @@ import { awaitingHandler } from "./awaitingHandler";
 export async function handleMenuCommand(UserMsg: UserMsg, chat_id: number, text: string, msgs: MessageMS[]) {
   await RediceService.deleteUserState(chat_id);
   const menu = await MS.getSpecialMsg(chat_id, 'menu');
-  await MS.delNewDelOld(msgs, chat_id, 'menu');
-  console.log('get menu ', menu)
+  await MS.deleteAllNewMessages(msgs, chat_id, 'menu');
   return handleStartMenu(UserMsg, text as '/start' | '/menu', !menu, menu?.message_id);
 }
 
@@ -25,7 +24,7 @@ export async function handleUserState(chat_id: number, msgs: MessageMS[], userTe
       await MS.saveMessages(msgs);
       return bot.editMessageText(answer.text, { chat_id, message_id: response.message_id });
     } else {
-      await MS.delNewDelOld(msgs, chat_id);
+      await MS.deleteOldAndNewMessages(chat_id, msgs);
       await RediceService.deleteUserState(chat_id);
       const successResponse = await sendImageWithText(bot, chat_id, 'menu.jpg', answer.text, mainOptions().inline_keyboard);
       

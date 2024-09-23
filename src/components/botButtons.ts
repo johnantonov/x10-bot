@@ -60,7 +60,7 @@ export const CallbackData: Record<string, CallbackQuery['data']> = {
   returnConnection: 'rc?',
 } as const;
 
-export const mainButtons: Record<string, InlineKeyboardButton>  = {
+export const mainButtons: Record<string, InlineKeyboardButton> = {
   returnMain: { text: '🔙 Вернуться в главное меню', callback_data: CallbackData.returnMain },
   onTable: { text: '📂 Подключить телеграм отчет', callback_data: CallbackData.onTable },
   menu: { text: '↩️ Меню', callback_data: CallbackData.menu },
@@ -71,7 +71,7 @@ export const mainButtons: Record<string, InlineKeyboardButton>  = {
   newConnection: { text: '➕ Новое подключение', callback_data: CallbackData.newConnection } ,
   loading: { text: '⏳ Загрузка...', callback_data: CallbackData.loading },
   registrateUser: { text: '➕ Новое подключение', callback_data: CallbackData.registrateUser },
-}
+} as const
 
 export const connectionButtons: Record<string, ((connection: string) => TelegramBot.InlineKeyboardButton)> = {
   getReportNow: (connection: string) => { return { text: '📂 Сформировать отчет сейчас', callback_data: CallbackData.getReportNow + connection } },
@@ -193,7 +193,7 @@ export async function generateConnectionsButtons(chat_id: number, page: number =
     });
   });
 
-  connectionButtons.push([mainButtons.newConnection, mainButtons.menuAndEdit]);
+  connectionButtons.push([mainButtons.newConnection, { text: '↩️ Меню', callback_data: CallbackData.menuAndEdit }]);
 
   return connectionButtons;
 }

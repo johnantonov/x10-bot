@@ -56,17 +56,22 @@ class ConnectionsModel extends BaseModel<Connection> {
     await this.pool.query(query, [chat_id, ss]);
   }
 
-  async updateNotificationTime(chat_id: number, notification_time: number): Promise<void> {
-    let status;
-    status = notification_time === 0 ? 'off' : 'on';
+  async updateNotificationTime(chat_id: number, notification_time: number, ss?: string): Promise<void> {
+    let status = notification_time === 0 ? 'off' : 'on';
+    const values = [notification_time, chat_id, status]
 
-    const query = `
+    let query = `
       UPDATE ${this.tableName}
       SET notification_time = $1, status = $3
       WHERE chat_id = $2
     `;
 
-    await this.pool.query(query, [notification_time, chat_id, status]);
+    if (ss) {
+      query += `AND ss = $4`
+      values.push(ss)
+    }
+
+    await this.pool.query(query, values);
   }
 
   async updateTitle(chat_id: number, ss: string, title: string): Promise<void> {

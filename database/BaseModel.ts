@@ -13,6 +13,20 @@ export abstract class BaseModel<T> {
     this.pool = pool;
   }
 
+  async getAllData() {
+    try {
+      const usersResult = await this.pool.query('SELECT * FROM users');
+      const connectionsResult = await this.pool.query('SELECT * FROM connections');
+  
+      return {
+        users: usersResult.rows,
+        connections: connectionsResult.rows,
+      };
+    } catch (err) {
+      console.error('Ошибка при получении данных:', err);
+    }
+  }
+
   async insert(data: Partial<T>): Promise<void> {
     const columns = Object.keys(data).join(', ');
     const values = Object.values(data);
