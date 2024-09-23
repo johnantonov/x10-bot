@@ -20,7 +20,3 @@ export class User {
     this.ss_report = data.ss
   }
 }
-
-export interface UserData {
-
-}

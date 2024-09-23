@@ -1,5 +1,5 @@
 import TelegramBot from "node-telegram-bot-api"
-import { reportService, ReportService, runPersonReport } from "../services/reportService"
+import { reportService } from "../services/reportService"
 import * as dotenv from 'dotenv';
 import pool from "../../database/db"
 import { migrations } from "../helpers/wip-quick-fix-migration";
@@ -12,12 +12,19 @@ const helpInfo = `
 /admin__delete_user_{id} - удалить пользователя из таблицы users
 `
 
-export async function handleAdminCommand(chatId: number, command: string, bot: TelegramBot) {
+export async function handleAdminCommand(chat_id: number, command: string, bot: TelegramBot) {
   try {
-    const adminChatId = process.env.ADMIN_CHAT
-    if (!adminChatId || chatId !== +adminChatId) {
-      return console.log(`Сhat id ${chatId} does not have access.`)
+
+    const adminChatIds = process.env.ADMIN_CHAT ? process.env.ADMIN_CHAT.split(',').map(Number) : [];
+
+    if (!process.env.ADMIN_CHAT) {
+      return console.log(`Error to getting admins from the env`)
     }
+
+    if (!adminChatIds.includes(chat_id)) {
+      return console.log(`Chat id ${chat_id} does not have access.`);
+    }
+
     const action = command.split('__')[1]
     console.log('admin handler action: ', action)
 
@@ -59,9 +66,10 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
     }
     
     if (action.startsWith('help')) {
-      await bot.sendMessage(chatId, helpInfo)
+      await bot.sendMessage(chat_id, helpInfo)
     }
 
+    // work in progress, now all migrations are added to the folder sql migrations and helpers/wip 
     if (action.startsWith('db_migrate')) {
       const step = +action.split('migrate_')[1]
       try {
@@ -71,6 +79,8 @@ export async function handleAdminCommand(chatId: number, command: string, bot: T
       }
 
     }
+
+    // send all data to spreadsheet db
     
   } catch (e) {
     console.error('error in admin handler: '+e)

@@ -1,137 +1,266 @@
-import TelegramBot from "node-telegram-bot-api";
-import { MessageMS, UserCb } from "../dto/msgData";
-import { cbs, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu } from "../components/buttons";
+import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
+import { MessageMS, UserCallback } from "../dto/messages";
+import { CallbackData, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu, Options } from "../components/botButtons";
 import { redis, rStates, ttls } from "../redis";
 import { connections_db } from "../../database/models/connections";
-import { handleStartMenu } from "../components/answers";
+import { handleStartMenu } from "../components/botAnswers";
 import { RediceService } from "../bot";
-import { MessageService } from "../services/messageService";
+import { createEditData, MessageService } from "../services/messageService";
 import { runPersonReport } from "../services/reportService";
 import { newConnectionData, parseConnectionData } from "../utils/parse";
+import { images } from "../dto/images";
+import { CallbackProcessor } from "../utils/CallbackProcessor";
 
+/**
+ * handler that starting if user send button callback
+ */
 export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: TelegramBot, RS: redis, MS: MessageService) {
-  const userCb = new UserCb(query);
-  const { chatId, cb, messageId } = userCb;
-  const msgs: MessageMS[] = []
-  let response: MessageMS;
+  const userCallback = new UserCallback(query);
+  const { chat_id, userCallbackData, message_id } = userCallback;
+  const returnBtn = returnMenu(true);
+  const mainBtn = mainOptions()
+  const msgs: MessageMS[] = [];
 
-  if (!messageId) {
-    return
+  if (!message_id) {
+    return console.error('message_id not found')
   }
 
-  if (cb.startsWith(cbs.menu)) {
-    await RediceService.deleteUserState(chatId)
-    if (cb === cbs.menuAndEdit) {
-      await handleStartMenu(false, userCb, '/menu');
-    } else {
-      await handleStartMenu(true, userCb, '/menu');
-    }
+  if (!userCallbackData) {
+    return console.error('error to getting')
   }
 
-//*********************** ONE CONNECTION ***********************//
-  if (cb === cbs.setOldUserType) {
-    await RS.setUserState(chatId, rStates.waitPremPass, ttls.usual)
-    await MS.editMessage(chatId, messageId, '🔑 Введите ваш пароль :)', returnMenu(true).reply_markup);
-  };
-
-  if (cb === cbs.myConnections) {
-    const buttons = await generateConnectionsButtons(chatId)
-    await MS.editMessage(chatId, messageId, 
-      'Выберите подключение:', 
-      { inline_keyboard: buttons })
-  }
-
-  if (cb.startsWith(cbs.connectionBtn)) {
-    const data = parseConnectionData(cb);
-    const newCb = newConnectionData(data); 
-    await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
-  }
-
-  if (cb === cbs.newConnection) {
-    await RS.setUserState(chatId, rStates.waitNewConnection, ttls.usual)
-    await MS.editMessage(chatId, messageId, '🔑 Введите пароль от подключения', returnMenu(true).reply_markup);
-  }
-
-  if (cb.startsWith(cbs.getReportNow)) {
-    const data = parseConnectionData(cb);
-    const newCb = newConnectionData(data) 
-    await bot.editMessageReplyMarkup(connectionOptions(newCb, data.sts, true).reply_markup, { chat_id: chatId, message_id: messageId })
-    const reportMessageId = await runPersonReport(chatId, 'single', data.ss)
-    await MS.delNewDelOld(msgs, chatId);
-  }
-
-  if (cb.startsWith(cbs.editReportProducts)) {
-    const data = parseConnectionData(cb);
-    const newCb = newConnectionData(data);
-    await MS.editMessage(chatId, messageId, 
-      `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
-      connectionOptions(newCb, data.sts).reply_markup, 'editProducts.jpg');
-  }
-    
-  if (cb.startsWith(cbs.editConnectionTitle)) {
-    const data = parseConnectionData(cb);
-    const newCb = newConnectionData(data);
-    await RS.setUserState(chatId, rStates.waitConnectionTitle+data.ss, ttls.usual)
-    await MS.editMessage(chatId, messageId, '✍️ Введите название подключения', returnConnectionMenu(newCb).reply_markup);
-  }
-
-  if (cb.startsWith(cbs.offConnection) || cb.startsWith(cbs.offTable)) {
-    const data = parseConnectionData(cb);
-    const newCb = newConnectionData(data);
-    const text = cb.startsWith(cbs.offConnection) ? 'удалить таблицу из подключений?' : 'отключить ежедневную рассылку?' 
-    const endText = cb.startsWith(cbs.offConnection) ? 'удалили таблицу. Вы сможете подключить ее повторно в меню "Подключения"' : 'отключили ежедневную рассылкую.' 
-    const action = data.an
+  const processor = new CallbackProcessor(userCallbackData);
+  const action = processor.getAction();
+  let data: any;
+  let newButtonCallback: string;
+  let buttons: InlineKeyboardButton[][];
+  let editData: { text: string; options: Options['reply_markup']; image?: string } | null = null;
   
-    if (!action) {
-      return MS.editMessage(chatId, messageId, 
-        'Вы уверены, что хотите ' + text, 
-        yesNo(data.mn + "?" + newCb).reply_markup)
-    } else if (cb.endsWith(cbs.yes)) {
-      if (cb.startsWith(cbs.offConnection)) {
-        await connections_db.removeConnection(chatId, data.ss) 
+  switch (action) {
+    case 'menu':
+      await RediceService.deleteUserState(chat_id)
+      const menu = await MS.getSpecialMsg(chat_id, 'menu');
+      if (userCallbackData === CallbackData.menuAndEdit) {
+        await handleStartMenu(userCallback, '/menu', false, menu.message_id)
       } else {
-        await connections_db.updateNotificationTime(chatId, 0)
+        await handleStartMenu(userCallback, '/menu', true)
       }
-    } else {
-      return MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
-    }
+      break;
 
-    await MS.editMessage(chatId, messageId, 
-      `✅ Вы успешно ` + endText, 
-      mainOptions(false).reply_markup)
-  }
+    case 'new user': 
+      await RS.setUserState(chat_id, rStates.waitPremPass, ttls.usual)
+      // await MS.editMessage(chat_id, message_id, '🔑 Введите ваш пароль :)', returnBtn);
+      editData = createEditData('🔑 Введите ваш пароль :)', returnBtn);
+      break;
 
- if (cb.startsWith(cbs.returnConnection)) {
-  const data = parseConnectionData(cb);
-  const newCb = newConnectionData(data); 
-  await MS.editMessage(chatId, messageId, ' ', connectionOptions(newCb, data.sts).reply_markup);
- }  
+    case 'my connection': 
+      buttons = await generateConnectionsButtons(chat_id)
+      // await MS.editMessage(chat_id, message_id, 'Выберите подключение:', { inline_keyboard: buttons })
+      editData = createEditData('Выберите подключение:', { inline_keyboard: buttons });
+    break;
 
-//*********************** ALL CONNECTIONS ***********************//
+    case 'open connection': 
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data); 
+      // await MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+      editData = createEditData(' ', connectionOptions(newButtonCallback, data.sts));
+    break;
 
-  if (cb === cbs.getAllReportsNow) {
-    await bot.editMessageReplyMarkup(mainOptions(true).reply_markup, { chat_id: chatId, message_id: messageId })
-    await runPersonReport(chatId, 'all')
-    await MS.delNewDelOld(msgs, chatId);
-  }
+    case 'new connection': 
+      await RS.setUserState(chat_id, rStates.waitNewConnection, ttls.usual)
+      // await MS.editMessage(chat_id, message_id, '🔑 Введите пароль от подключения', returnBtn);
+      editData = createEditData('🔑 Введите пароль от подключения', returnBtn);
+    break;
 
-// *********** REPORT TIME *************
-  if (cb.startsWith(cbs.changeTime)) {
-    const selectedTime = cb.split('?')[1]
+    case 'report now': 
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data) 
+      await bot.editMessageReplyMarkup(connectionOptions(newButtonCallback, data.sts, true), { chat_id: chat_id, message_id })
+      await runPersonReport(chat_id, 'single', data.ss)
+      await MS.delNewDelOld(msgs, chat_id);
+    break;
 
-    if (!selectedTime) {
-      await MS.editMessage(chatId, messageId, 
-        'Выберите время по МСК, когда вам будет удобно получать отчет:', 
-        { inline_keyboard: generateReportTimeButtons(cb) })
-    } else {
-      await connections_db.updateNotificationTime(chatId, selectedTime)
-      await MS.editMessage(chatId, messageId, 
-        `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, 
-        mainOptions().reply_markup)
-    };
+    case 'edit products': 
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data);
+      // await MS.editMessage(chat_id, message_id, 
+      //   `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
+      //   connectionOptions(newButtonCallback, data.sts), images.editProducts);
+      editData = createEditData(
+        `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
+        returnBtn,
+        images.editProducts
+      );
+    break;
 
-  }
+    case 'off': 
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data);
+      const text = userCallbackData.startsWith(CallbackData.offConnection as string) ? 'удалить таблицу из подключений?' : 'отключить ежедневную рассылку?' 
+      const endText = userCallbackData.startsWith(CallbackData.offConnection as string) ? 'удалили таблицу. Вы сможете подключить ее повторно в меню "Подключения"' : 'отключили ежедневную рассылкую.' 
+      const action = data.an;
+      if (!action) {
+        return MS.editMessage(chat_id, message_id, 'Вы уверены, что хотите ' + text, yesNo(data.mn + "?" + newButtonCallback))
+      } else if (userCallbackData.endsWith(CallbackData.yes as string)) {
+        if (userCallbackData.startsWith(CallbackData.offConnection as string)) {
+          await connections_db.removeConnection(chat_id, data.ss) 
+        } else {
+          await connections_db.updateNotificationTime(chat_id, 0)
+        }
+      } else {
+        return MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+      }
+      editData = createEditData(`✅ Вы успешно ` + endText, mainBtn);
+      // await MS.editMessage(chat_id, message_id, `✅ Вы успешно ` + endText, mainBtn)
+    break;
+
+    case 'return connection menu': 
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data); 
+      // await MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+      editData = createEditData(' ', connectionOptions(newButtonCallback, data.sts));
+    break;
+
+    case 'get all reports': 
+      await bot.editMessageReplyMarkup(mainOptions(true), { chat_id: chat_id, message_id: message_id })
+      await runPersonReport(chat_id, 'all')
+      await MS.delNewDelOld(msgs, chat_id);
+    break;
+
+    case 'change time': 
+      const selectedTime = +userCallbackData.split('?')[1]
+
+      if (!selectedTime) {
+        // await MS.editMessage(chat_id, message_id, 
+        //   'Выберите время по МСК, когда вам будет удобно получать отчет:', 
+        //   { inline_keyboard: generateReportTimeButtons(userCallbackData) })
+        editData = { text: 'Выберите время по МСК, когда вам будет удобно получать отчет:', options: { inline_keyboard: generateReportTimeButtons(userCallbackData) } }
+      } else {
+        await connections_db.updateNotificationTime(chat_id, selectedTime);
+        createEditData(`✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, mainBtn)
+        // await MS.editMessage(chat_id, message_id, `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, mainBtn)
+      };
+    break;
     
+    default:
+      await bot.sendMessage(chat_id, 'Возникла ошибка при обработке ответа!', { reply_markup: mainBtn })
+      console.error('Error processing callback: ', action)
+      break;
+  }
+
+  if (editData) {
+    return await MS.editMessage(chat_id, message_id, editData?.text, editData?.options)
+  } 
 
   return bot.answerCallbackQuery(query.id);
 }
+
+  // if (userCallbackData.startsWith(CallbackData.menu as string)) {
+  //   await RediceService.deleteUserState(chat_id)
+
+  //   if (userCallbackData === CallbackData.menuAndEdit) {
+  //     await handleStartMenu(userCallback, '/menu', false)
+  //   } else {
+  //     await handleStartMenu(userCallback, '/menu', true)
+  //   }
+  // }
+
+//*********************** ONE CONNECTION ***********************//
+  // if (userCallbackData === CallbackData.registrateUser) {
+  //   await RS.setUserState(chat_id, rStates.waitPremPass, ttls.usual)
+  //   await MS.editMessage(chat_id, message_id, '🔑 Введите ваш пароль :)', menu);
+  // };
+
+  // if (userCallbackData === CallbackData.myConnections) {
+  //   const buttons = await generateConnectionsButtons(chat_id)
+  //   await MS.editMessage(chat_id, message_id, 'Выберите подключение:', { inline_keyboard: buttons })
+  // }
+
+  // if (userCallbackData.startsWith(CallbackData.connectionBtn as string)) {
+  //   const data = parseConnectionData(userCallbackData);
+  //   const newButtonCallback = newConnectionData(data); 
+  //   await MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+  // }
+
+  // if (userCallbackData === CallbackData.newConnection) {
+  //   await RS.setUserState(chat_id, rStates.waitNewConnection, ttls.usual)
+  //   await MS.editMessage(chat_id, message_id, '🔑 Введите пароль от подключения', menu);
+  // }
+
+  // if (userCallbackData.startsWith(CallbackData.getReportNow as string)) {
+  //   const data = parseConnectionData(userCallbackData);
+  //   const newButtonCallback = newConnectionData(data) 
+  //   await bot.editMessageReplyMarkup(connectionOptions(newButtonCallback, data.sts, true), { chat_id: chat_id, message_id })
+  //   await runPersonReport(chat_id, 'single', data.ss)
+  //   await MS.delNewDelOld(msgs, chat_id);
+  // }
+
+  // if (userCallbackData.startsWith(CallbackData.editReportProducts as string)) {
+  //   const data = parseConnectionData(userCallbackData);
+  //   const newButtonCallback = newConnectionData(data);
+  //   await MS.editMessage(chat_id, message_id, 
+  //     `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
+  //     connectionOptions(newButtonCallback, data.sts), images.editProducts);
+  // }
+    
+  // if (userCallbackData.startsWith(CallbackData.editConnectionTitle as string)) {
+  //   const data = parseConnectionData(userCallbackData);
+  //   const newButtonCallback = newConnectionData(data);
+  //   await RS.setUserState(chat_id, rStates.waitConnectionTitle+data.ss, ttls.usual)
+  //   await MS.editMessage(chat_id, message_id, '✍️ Введите название подключения', returnConnectionMenu(newButtonCallback));
+  // }
+
+  // if (userCallbackData.startsWith(CallbackData.offConnection as string) || userCallbackData.startsWith(CallbackData.offTable as string)) {
+  //   const data = parseConnectionData(userCallbackData);
+  //   const newButtonCallback = newConnectionData(data);
+  //   const text = userCallbackData.startsWith(CallbackData.offConnection as string) ? 'удалить таблицу из подключений?' : 'отключить ежедневную рассылку?' 
+  //   const endText = userCallbackData.startsWith(CallbackData.offConnection as string) ? 'удалили таблицу. Вы сможете подключить ее повторно в меню "Подключения"' : 'отключили ежедневную рассылкую.' 
+  //   const action = data.an;
+  
+  //   if (!action) {
+  //     return MS.editMessage(chat_id, message_id, 'Вы уверены, что хотите ' + text, yesNo(data.mn + "?" + newButtonCallback))
+  //   } else if (userCallbackData.endsWith(CallbackData.yes as string)) {
+  //     if (userCallbackData.startsWith(CallbackData.offConnection as string)) {
+  //       await connections_db.removeConnection(chat_id, data.ss) 
+  //     } else {
+  //       await connections_db.updateNotificationTime(chat_id, 0)
+  //     }
+  //   } else {
+  //     return MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+  //   }
+
+  //   await MS.editMessage(chat_id, message_id, `✅ Вы успешно ` + endText, mainOptions(false))
+  // }
+
+//  if (userCallbackData.startsWith(CallbackData.returnConnection as string)) {
+//   const data = parseConnectionData(userCallbackData);
+//   const newButtonCallback = newConnectionData(data); 
+//   await MS.editMessage(chat_id, message_id, ' ', connectionOptions(newButtonCallback, data.sts));
+//  }  
+
+//*********************** ALL CONNECTIONS ***********************//
+
+  // if (userCallbackData === CallbackData.getAllReportsNow) {
+  //   await bot.editMessageReplyMarkup(mainOptions(true), { chat_id: chat_id, message_id: message_id })
+  //   await runPersonReport(chat_id, 'all')
+  //   await MS.delNewDelOld(msgs, chat_id);
+  // }
+
+// *********** REPORT TIME *************
+  // if (userCallbackData.startsWith(CallbackData.changeTime as string)) {
+  //   const selectedTime = +userCallbackData.split('?')[1]
+
+  //   if (!selectedTime) {
+  //     await MS.editMessage(chat_id, message_id, 
+  //       'Выберите время по МСК, когда вам будет удобно получать отчет:', 
+  //       { inline_keyboard: generateReportTimeButtons(userCallbackData) })
+  //   } else {
+  //     await connections_db.updateNotificationTime(chat_id, selectedTime)
+  //     await MS.editMessage(chat_id, message_id, `✅ Вы будете получать отчёт ежедневно в ${selectedTime}:00`, mainOptions())
+  //   };
+
+  // }
+    
+
+  // return bot.answerCallbackQuery(query.id);
+// }

@@ -14,10 +14,10 @@ dotenv.config();
 const port = process.env.BASE_PORT;
 
 app.post('/runReportForUser', async (req, res) => {
-  const { chatId, type, ss } = req.body;
+  const { chat_id, type, ss } = req.body;
   try {
     const RS = new ReportService(pool);
-    const user = await users_db.getUserById(chatId);
+    const user = await users_db.getUserById(chat_id);
     if (user) {
       const id = await RS.runForUser(user, type, ss);
       res.status(200).send('Report run successfully for user.');
@@ -34,8 +34,14 @@ app.listen(port, () => {
   console.log(`API Server running on port ${port}`);
 });
 
+/**
+ * inner request to start personal report
+ * @param {number} chat_id - user chat id
+ * @param {'single' | 'all'} type - all connections reports or only one
+ * @param {string} ss - spreadsheet id
+ */
 export async function runPersonReport(chat_id: number, type: 'single' | 'all', ss?: string ): Promise<number | null> {
-  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id, type: type, ss: ss })
+  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id, type, ss })
     .then(response => {
       console.log('Report initiated: ', response.data);
       return response.data; 
@@ -64,37 +70,26 @@ export class ReportService {
   }
 
   // Send message to user
-  async sendMessage(chatId: number, message: string, reply_markup?: Options['reply_markup'] ) {
+  async sendMessage(chat_id: number, text: string, reply_markup?: Options['reply_markup'] ) {
     const telegramApiUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`;
   
     try {
-      const res = await axios.post(telegramApiUrl, {
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'HTML',
-        reply_markup: reply_markup ? reply_markup : undefined
-      });
-      console.log(`Report Service: Message sent to chatId: ${chatId}`);
+      const res = await axios.post(telegramApiUrl, { chat_id, text, parse_mode: 'HTML', reply_markup: reply_markup ? reply_markup : undefined });
+      console.log(`Report Service: Message sent to chatId: ${chat_id}`);
       return res.data.result.message_id;
     } catch (error) {
-      console.error(`Report Service: Failed to send message to chatId: ${chatId}`, error);
+      console.error(`Report Service: Failed to send message to chatId: ${chat_id}`, error);
     }
   }
 
-  async sendPhoto(chatId: number, image: any, caption?: string, reply_markup?: Options['reply_markup']): Promise<void> {    
+  async sendPhoto(chat_id: number, photo: any, caption?: string, reply_markup?: Options['reply_markup']): Promise<void> {    
     const telegramApiUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendPhoto`;
   
     try {
-      await axios.post(telegramApiUrl, {
-        chat_id: chatId,
-        photo: image,
-        caption: caption,
-        parse_mode: 'HTML', 
-        reply_markup: reply_markup
-      });
-      console.log(`Report Service: Photo sent to chatId: ${chatId}`);
+      await axios.post(telegramApiUrl, { chat_id, photo, caption, parse_mode: 'HTML', reply_markup });
+      console.log(`Report Service: Photo sent to chatId: ${chat_id}`);
     } catch (error) {
-      console.error(`Report Service: Failed to send photo to chatId: ${chatId}`, error);
+      console.error(`Report Service: Failed to send photo to chatId: ${chat_id}`, error);
     }
   }
 
@@ -107,18 +102,11 @@ export class ReportService {
 
       if (updated_now) {
         console.log(ssList, updated_now)
-        const response = axios.post(url!, {
-          ssList: ssList,
-          date: date,
-          id: updated_now
-        });      
+        const response = axios.post(url!, { ssList, date, id: updated_now });      
         return null;
       }
       
-      const response = await axios.post(url!, {
-        ssList: ssList,
-        date: date,
-      });      
+      const response = await axios.post(url!, { ssList, date: date });      
 
       console.log(response.data)
       return response.data;
@@ -131,7 +119,7 @@ export class ReportService {
   async processReportForUser(chat_id: number, reportData: any) {
     if (reportData[0]) {
         const message =  getFormatReportTitle(reportData[0][1]) + '\n\n' + reportData[0][3]
-        const message_id = await this.sendPhoto(chat_id, reportData[0][4] , message, returnMenu(false).reply_markup)
+        const message_id = await this.sendPhoto(chat_id, reportData[0][4] , message, returnMenu(false))
         return message_id
     } 
   }
@@ -169,7 +157,7 @@ export class ReportService {
           await this.processReportForUser(user.chat_id, reportData[ss])
         }
       } else {
-        const rows = await users_db.getConnections(user.chat_id) 
+        const rows = await connections_db.getConnections(user.chat_id) 
         const ssList = rows.map(row => row.ss)
         const reportData = await this.getReportsFromWebApp(ssList, user.chat_id);
         if (reportData) {
@@ -200,9 +188,9 @@ export class ReportService {
 import pool from '../../database/db';
 import { User, user_type } from '../dto/user';
 import { users_db } from '../../database/models/users';
-import { mainOptions, Options, returnMenu } from '../components/buttons';
+import { Options, returnMenu } from '../components/botButtons';
 import { getYesterdayDate } from '../utils/dates';
-import { Connection, connections_db } from '../../database/models/connections';
+import { connections_db } from '../../database/models/connections';
 import { getFormatConnections } from '../utils/parse';
 import { getFormatReportTitle } from '../utils/string';
 

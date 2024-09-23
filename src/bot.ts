@@ -1,13 +1,14 @@
 import TelegramBot from 'node-telegram-bot-api';
 import dotenv from 'dotenv';
-import { mainOptions, setBotCommands } from './components/buttons';
+import { mainOptions, setBotCommands } from './components/botButtons';
 import { redis, waitingStates } from './redis';
-import { handleStartMenu, sendImageWithText, } from './components/answers';
-import { AwaitingAnswer, MessageMS, UserMsg } from './dto/msgData';
+import { handleStartMenu, sendImageWithText, } from './components/botAnswers';
+import { AwaitingAnswer, MessageMS, UserMsg } from './dto/messages';
 import { MessageService } from './services/messageService';
 import { callbackHandler } from './handlers/callbackHandler';
 import { awaitingHandler } from './handlers/awaitingHandler';
 import { handleAdminCommand } from './handlers/adminHandler';
+import { handleMenuCommand, handleUserState } from './handlers/textHandler';
 
 dotenv.config();
 const token = process.env.TELEGRAM_TOKEN;
@@ -28,48 +29,58 @@ bot.on('callback_query', async (query: TelegramBot.CallbackQuery) => {
 });
 
 bot.on('message', async (msg: TelegramBot.Message) => { 
-  const userMsg = new UserMsg(msg);
-  const msgs: MessageMS[] = [];
-  const { chatId, text, messageId } = userMsg;
-  msgs.push(new MessageMS({ chatId, messageId, content: text }));
-  let response;
+  const UserTextMessage = new UserMsg(msg);
+  const { chat_id, text, message_id } = UserTextMessage;
 
   if (!text) {
     return;
   };
 
+  const msgs: MessageMS[] = [new MessageMS({ chat_id, message_id, content: text })];
+  
   if (text.startsWith('/admin__')) {
-    return handleAdminCommand(chatId, text, bot)
+    return handleAdminCommand(chat_id, text, bot)
   }
   
   if (['/start', '/menu'].includes(text)) {
-    await RediceService.deleteUserState(chatId)
-    const menu = await MS.getSpecialMsg(chatId, 'menu')
-    await MS.delNewDelOld(msgs, chatId, 'menu');
-    if (menu) {
-      await handleStartMenu(false, userMsg, text as '/start' | '/menu', menu.messageId);
-    } else {
-      await handleStartMenu(true, userMsg, text as '/start' | '/menu');
-    }
-  };
+    await handleMenuCommand(UserTextMessage, chat_id, text, msgs);
+    return;
+  }
 
-  const userState = await RediceService.getUserState(chatId);
+  // if (['/start', '/menu'].includes(text)) {
+  //   await RediceService.deleteUserState(chat_id)
+  //   const menu = await MS.getSpecialMsg(chat_id, 'menu')
+  //   await MS.delNewDelOld(msgs, chat_id, 'menu');
+  //   // if (menu) {
+  //     return handleStartMenu(UserTextMessage, text as '/start' | '/menu', menu ? false : true, menu.message_id)
+  //     // } 
+  //     // else {
+  //       //   await handleStartMenu(UserTextMessage, text as '/start' | '/menu', true, menu.message_id)
+  //       // }
+  // };
+      
+  const userState = await RediceService.getUserState(chat_id);
+  // let response;
 
-  if (userState && (waitingStates.includes(userState) || userState.startsWith(waitingStates[0]))) {
-    response = await bot.sendMessage(chatId, "Проверяем...⌛️");
-    const answer: AwaitingAnswer = await awaitingHandler(userMsg, userState)
-    msgs.push({ chatId, messageId: response.message_id, special: 'menu' })
+  await handleUserState(chat_id, msgs, UserTextMessage);
 
-    if (!answer.result) {
-      await MS.saveMessages(msgs);
-      return bot.editMessageText(answer.text, { chat_id: chatId, message_id: response.message_id })
-    } else {
-      await MS.delNewDelOld(msgs, chatId);
-      await RediceService.deleteUserState(chatId)
-      let successResponse = await sendImageWithText(bot, chatId, 'menu.jpg', answer.text, mainOptions())
-      await MS.saveMessage({ chatId, messageId: successResponse.message_id, special: "menu" })
-    }
-  };
+  // if (userState && (waitingStates.includes(userState) || userState.startsWith(waitingStates[0]))) {
+  //   response = await bot.sendMessage(chat_id, "Проверяем...⌛️");
+  //   const answer: AwaitingAnswer = await awaitingHandler(UserTextMessage, userState)
+  //   msgs.push({ chat_id, message_id: response.message_id, special: 'menu' })
+
+  //   if (!answer.result) {
+  //     await MS.saveMessages(msgs);
+  //     return bot.editMessageText(answer.text, { chat_id: chat_id, message_id: response.message_id })
+  //   } else {
+  //     await MS.delNewDelOld(msgs, chat_id);
+  //     await RediceService.deleteUserState(chat_id)
+  //     let successResponse = await sendImageWithText(bot, chat_id, 'menu.jpg', answer.text, mainOptions().inline_keyboard)
+  //     if (successResponse) {
+  //       await MS.saveMessage({ chat_id, message_id: successResponse.message_id, special: "menu" })
+  //     }
+  //   }
+  // };
 });
 
 console.log('Bot started!');

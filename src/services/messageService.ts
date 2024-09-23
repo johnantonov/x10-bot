@@ -1,11 +1,21 @@
 import TelegramBot, { ChatId, EditMessageTextOptions, InlineKeyboardMarkup } from 'node-telegram-bot-api';
 import { Redis } from 'ioredis';
-import { MessageMS } from '../dto/msgData';
+import { MessageMS } from '../dto/messages';
 import { getPath } from '../utils/parse';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+/**
+ * create a new data to edit message, using in callback handler
+ * @param {string} text - new text  of message
+ * @param {TelegramBot.InlineKeyboardButton[][]} Options - new buttons
+ * @param {string} image - string of img name and extension
+ */
+export function createEditData(text: string, options: Options['reply_markup'], image?: string) {
+  return { text, options, image };
+}
 
 export class MessageService {
   private bot: TelegramBot;
@@ -19,27 +29,25 @@ export class MessageService {
   /**
    * delete msg from chat
    */
-  async deleteMessage(chatId: ChatId, messageId: number): Promise<void> {
+  async deleteMessage(chat_id: ChatId, message_id: number): Promise<void> {
     try {
-      await this.bot.deleteMessage(chatId, messageId);
+      await this.bot.deleteMessage(chat_id, message_id);
     } catch (error) {
-      console.error(`Error deleting msg ID ${messageId}:`, error);
+      console.error(`Error deleting msg ID ${message_id}:`, error);
     }
   }
 
   /**
    * save msg
    */
-  async saveMessage({ chatId, messageId, direction, content, special } : MessageMS) {
-    const messageKey = `messages:${chatId}`;
-    const message = {
-      messageId,
-      direction,
-      content,
-      special,
-      timestamp: Date.now(),
-    };
-    await this.client.rpush(messageKey, JSON.stringify(message));
+  async saveMessage({ chat_id, message_id, direction, content, special }: MessageMS) {
+    try {
+      const messageKey = `messages:${chat_id}`;
+      const message = { message_id, direction, content, special, timestamp: Date.now() };
+      await this.client.rpush(messageKey, JSON.stringify(message));
+    } catch (e) {
+      console.error('Message Service: error to saving message - ', e)
+    }
   }
 
   /**
@@ -54,21 +62,21 @@ export class MessageService {
   /**
    * delete all current msgs and add new array of msgs
    */
-  async addNewAndDelOld(msgs: MessageMS[], chatId: number) {
-    await this.deleteAllMessages(chatId)
+  async addNewAndDelOld(msgs: MessageMS[], chat_id: number) {
+    await this.deleteAllMessages(chat_id)
     await this.saveMessages(msgs)
   }
 
   /**
    * delete all current msgs and new msgs without saving
    */ 
-  async delNewDelOld(msgs: MessageMS[], chatId: number, exclude?: string) {
-    await this.deleteAllMessages(chatId, exclude);
+  async delNewDelOld(msgs: MessageMS[], chat_id: number, exclude?: string) {
+    // await this.deleteAllMessages(chat_id, exclude);
     const deletePromises = msgs.map(async (msg) => {
       try {
-        await this.bot.deleteMessage(chatId, msg.messageId);
+        await this.bot.deleteMessage(chat_id, msg.message_id);
       } catch (error) {
-        console.error(`Error during delete message ${msg.messageId}:`, error);
+        console.error(`Error during delete message ${msg.message_id}:`, error);
       }
     });
     await Promise.all(deletePromises);
@@ -77,16 +85,16 @@ export class MessageService {
     /**
    * get one special msg
    */ 
-  async getSpecialMsg(chatId: number, special: string) {
-    const msgs = (await this.getMessages(chatId)).reverse();
+  async getSpecialMsg(chat_id: number, special: string) {
+    const msgs = await this.getMessages(chat_id);
     return msgs.filter(msg => msg.special === special)[0]
   }
 
   /**
    * get all msg
    */
-  async getMessages(chatId: number): Promise<any[]> {
-    const messageKey = `messages:${chatId}`;
+  async getMessages(chat_id: number): Promise<any[]> {
+    const messageKey = `messages:${chat_id}`;
     const messages = await this.client.lrange(messageKey, 0, -1);
     return messages.map(message => JSON.parse(message));
   }
@@ -94,10 +102,9 @@ export class MessageService {
 /**
  * delete all msgs from chat
  */
-async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
+async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
   try {
-    const messages = (await this.getMessages(chatId)).reverse();
-    
+    const messages = (await this.getMessages(chat_id)).reverse();
     let specialFound = false;
     
     const deletePromises = messages.map(async (message) => {
@@ -106,23 +113,24 @@ async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
           specialFound = true;
           return; 
         }
-        await this.bot.deleteMessage(chatId, message.messageId);;
+        await this.bot.deleteMessage(chat_id, message.message_id);
+        console.log('DELETE', message.message_id)
       } catch (error) {
-        console.error(`Error during delete message ${message.messageId}:`, error);
+        console.error(`Error during delete message ${message.message_id}:`, error);
       }
     });
     await Promise.all(deletePromises);
-    this.clearMessages(chatId);
+    this.clearMessages(chat_id);
   } catch (error) {
-    console.error(`Error during delete all msgs from chat, user: ${chatId} -`, error);
+    console.error(`Error during delete all msgs from chat, user: ${chat_id} -`, error);
   }
 }
 
   /**
    * delete all msgs from storage
    */
-  async clearMessages(chatId: number) {
-    const messageKey = `messages:${chatId}`;
+  async clearMessages(chat_id: number) {
+    const messageKey = `messages:${chat_id}`;
     await this.client.del(messageKey);
   }
 
@@ -133,7 +141,7 @@ async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
     chat_id: ChatId, 
     message_id: number, 
     newText?: string, 
-    newReplyMarkup?: InlineKeyboardMarkup, 
+    newReplyMarkup?: Options['reply_markup'], 
     media?: string,
   ) {
     
@@ -165,7 +173,18 @@ async deleteAllMessages(chatId: number, exclude?: string): Promise<void> {
 
 import fs from 'fs';
 import FormData from 'form-data';
+import { Options } from '../components/botButtons';
 
+
+/**
+ * edit message media (photo), native method to tg api request 
+ * @param {number | string} chat_id - user chat id
+ * @param {number} message_id - message id
+ * @param {string} mediaPath - resplved photo path
+ * @param {string} botToken - api bot token from bot father
+ * @param {string} caption - new text of message
+ * @param {InlineKeyboardMarkup} replyMarkup - new buttons
+ */
 async function editMessageMedia(  
   chat_id: number | string, 
   message_id: number, 
@@ -177,7 +196,6 @@ async function editMessageMedia(
   try {
     const form = new FormData();
 
-    // Формируем запрос с медиа
     form.append('media', JSON.stringify({
       type: 'photo',
       media: 'attach://photo',
@@ -190,7 +208,6 @@ async function editMessageMedia(
     form.append('chat_id', chat_id);
     form.append('message_id', message_id);
 
-    // Добавляем клавиатуру, если она передана
     if (replyMarkup) {
       form.append('reply_markup', JSON.stringify(replyMarkup));
     }

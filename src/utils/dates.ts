@@ -1,6 +1,9 @@
 import { format, subDays } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 
+/**
+ * get yesterday date
+ */
 export function getYesterdayDate() {
   const timeZone = 'Europe/Moscow'; 
 
@@ -13,6 +16,9 @@ export function getYesterdayDate() {
   return formattedDate;
 }
 
+/**
+ * create objects as { "2024-09-30": info } 
+ */
 export function create30DaysObject() {
   const daysObj: Record<string, any> = {};
   const today = new Date();
@@ -27,6 +33,10 @@ export function create30DaysObject() {
   return daysObj;
 }
 
+/**
+ * return dates array
+ * @param {number} x - how many days ago return
+ */
 export function getXdaysAgoArr(x: number) {
   const dates = [];
   const today = new Date();
@@ -41,10 +51,16 @@ export function getXdaysAgoArr(x: number) {
   return dates;
 }
 
+/**
+ * sort obj dates by keys by desc
+ */
 export function sortObjDatesKeys(obj: Record<string, any>) {
   return Object.keys(obj).sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
 }
 
+/**
+ * sort obj dates by values by desc
+ */
 export function sortObjDatesEntries(obj: Record<string, any>) {
   return Object.fromEntries(
     Object.entries(obj)

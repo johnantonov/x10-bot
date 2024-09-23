@@ -2,21 +2,30 @@ import { Pool, QueryResult } from 'pg';
 import { BaseModel } from "../BaseModel";
 import * as dotenv from 'dotenv';
 import pool from "../db";
+import { Connection } from '../../src/dto/connection';
 dotenv.config();
-
-export interface Connection {
-  ss: string;
-  chat_id: number;
-  notification_time?: number;
-  title?: string;
-  type?: string;
-  status?: 'on' | 'off';
-  report_on?: boolean;
-}
 
 class ConnectionsModel extends BaseModel<Connection> {
   constructor(pool: Pool) {
     super('connections', pool);
+  }
+  
+  async getConnections(chat_id: number) {
+    const query = `
+      SELECT * FROM connections
+      WHERE chat_id = $1
+    `;
+    const result = await this.pool.query(query, [chat_id]);
+    return result.rows;
+  }
+
+  async getConnection(chatId: number, ss: string) {
+    const query = `
+      SELECT * FROM connections
+      WHERE chat_id = $1 AND ss = $2
+    `;
+    const result = await this.pool.query(query, [chatId, ss]);
+    return result.rows[0];
   }
 
   async getConnectionsByTime(notification_time: number) {

@@ -1,17 +1,17 @@
 import { resolve } from "path"
-import { ConnectionCallbackData } from "../dto/buttons"
-import { Connection } from "../../database/models/connections"
+import { Connection, ConnectionCallbackData, ConnectionStatus } from "../dto/connection"
 
 export const getPath = (imageName: string) => {
   return resolve(__dirname, `../../../public/messageImages/${imageName}`)
 }
 
+ // use little keys because btn callback limit is 64 bytes and we have a large string ss id
 export const parseConnectionData = (data: string): ConnectionCallbackData => {
   const newData = data.split('?')
   return {
     mn: newData[0],
     ss: newData[1],
-    sts: newData[2],
+    sts: newData[2] as ConnectionStatus,
     an: newData[3],
   }
 }

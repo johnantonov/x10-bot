@@ -45,24 +45,6 @@ class UsersModel extends BaseModel<User> {
         return null
       }
   }
-
-  async getConnections(chat_id: number) {
-    const query = `
-      SELECT * FROM connections
-      WHERE chat_id = $1
-    `;
-    const result = await this.pool.query(query, [chat_id]);
-    return result.rows;
-  }
-
-  async getConnection(chatId: number, ss: string) {
-    const query = `
-      SELECT * FROM connections
-      WHERE chat_id = $1 AND ss = $2
-    `;
-    const result = await this.pool.query(query, [chatId, ss]);
-    return result.rows[0];
-  }
 }
 
 export const users_db = new UsersModel(pool);
