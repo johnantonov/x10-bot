@@ -94,7 +94,7 @@ export class ReportService {
   }
 
   // Send SS values to Google Web App and receive report data
-  async getReportsFromWebApp(ssList: string[], updated_now: false | number = false) {
+  async getReportsFromWebApp(ssList: string[][] | string[], updated_now: false | number = false, titles?: []) {
     try {
       const date = getYesterdayDate()
       console.log(date)
@@ -115,7 +115,10 @@ export class ReportService {
 
   async processReportForUser(chat_id: number, reportData: any) {
     if (reportData[0]) {
-        const message =  getFormatReportTitle(reportData[0][1]) + '\n\n' + reportData[0][3]
+        const connection = await connections_db.getConnection(chat_id, reportData[0][0]);
+        const title = connection.title;
+        const header = title ? getFormatReportTitle(title) : getFormatReportTitle(reportData[0][1])
+        const message =  header + '\n\n' + reportData[0][3]
         const message_id = await this.sendPhoto(chat_id, reportData[0][4] , message, returnMenu(false))
         return message_id
     } 
@@ -148,13 +151,14 @@ export class ReportService {
   async runForUser(user: User, type: 'single' | 'all', ss?: string) {
     try {
       if (type === 'single' && ss) {
-        const reportData = await this.getReportsFromWebApp([ss], user.chat_id);
+        const row = await connections_db.getConnection(user.chat_id, ss) 
+        const reportData = await this.getReportsFromWebApp([[ss, row.title]], user.chat_id);
         if (reportData) {
           await this.processReportForUser(user.chat_id, reportData[ss])
         }
       } else {
         const rows = await connections_db.getConnections(user.chat_id) 
-        const ssList = rows.map(row => row.ss)
+        const ssList = rows.map(row => [row.ss, row.title])
         const reportData = await this.getReportsFromWebApp(ssList, user.chat_id);
         if (reportData) {
           for (const ss of Object.keys(reportData)) {
