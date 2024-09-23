@@ -35,7 +35,7 @@ app.listen(port, () => {
 });
 
 export async function runPersonReport(chat_id: number, type: 'single' | 'all', ss?: string ): Promise<number | null> {
-  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chatId: chat_id, type: type, ss: ss })
+  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chat_id, type, ss })
     .then(response => {
       console.log('Report initiated: ', response.data);
       return response.data; 
@@ -167,7 +167,7 @@ export class ReportService {
     try {
       if (type === 'single' && ss) {
         const row = await users_db.getConnection(user.chat_id, ss) 
-        const reportData = await this.getReportsFromWebApp([ss, row.title], user.chat_id);
+        const reportData = await this.getReportsFromWebApp([[ss, row.title]], user.chat_id);
         if (reportData) {
           await this.processReportForUser(user.chat_id, reportData[ss])
         }
