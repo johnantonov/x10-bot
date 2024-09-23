@@ -35,7 +35,7 @@ app.listen(port, () => {
 });
 
 export async function runPersonReport(chat_id: number, type: 'single' | 'all', ss?: string ): Promise<number | null> {
-  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chat_id, type, ss })
+  return await axios.post(`http://localhost:${process.env.BASE_PORT}/runReportForUser`, { chat_id: chat_id, type: type, ss: ss })
     .then(response => {
       console.log('Report initiated: ', response.data);
       return response.data; 

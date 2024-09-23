@@ -5,7 +5,7 @@ export function getFormatReportTitle(input: string): string {
     const name = cleanedInput.split('|')[0].trim() + "_";; 
     return '#' + name.replace(/\s+/g, '_') + '10X';
   } else {
-    return cleanedInput.trim(); 
+    return '#' + cleanedInput.trim(); 
   }
 }
 
