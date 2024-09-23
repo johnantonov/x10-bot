@@ -81,22 +81,19 @@ export async function handleAdminCommand(chat_id: number, command: string, bot: 
       }
     }
 
-    // send all data to spreadsheet db
-    if (action.startsWith('send_all_data')) {
-      const data = await users_db.getAllData();
-    
-      try {
-        const response = await axios.post(process.env.SS_ALL_DATA_URL!, data, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-    
-        console.log('All data sent to web app: ', response.data);
-      } catch (error) {
-        console.error('Error sending all data: ', error);
-      }
-    }
+  // send all data to spreadsheet db
+  if (action.startsWith('send_all_data')) {
+    const data = await users_db.getAllData();
+
+    // Отправка запроса без обработки
+    axios.post(process.env.SS_ALL_DATA_URL!, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }).catch(error => {
+      console.error('Error sending all data: ', error);
+    });
+  }
     
   } catch (e) {
     console.error('error in admin handler: '+e)
