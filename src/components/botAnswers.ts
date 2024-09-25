@@ -38,7 +38,7 @@ export async function handleStartMenu(msg: UserMsg | UserCallback, command: '/me
       return console.error('handleStartMenu: error to get chat id:', msg, command, isNewMsg, menuId)
     }
 
-    const text = command === '/menu' ? ' ' : `Это телеграм бот для получения ежедневных отчетов по вашему кабинету из Системы 10X.\n\nДля начала работы зарегистрируйте вашу систему:`;
+    const text = command === '/menu' ? ' ' : `Это телеграм бот для получения ежедневных отчетов по вашему кабинету из Системы 10X.\n\nДля начала работы подключите таблицу:`;
     const img = command === '/menu' ? images.menu : images.hello;
     
     if (isUser) { 

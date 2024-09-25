@@ -58,6 +58,7 @@ export const CallbackData: Record<string, CallbackQuery['data']> = {
   editConnectionTitle: 'ecn?',
   offConnection: 'offc?',
   returnConnection: 'rc?',
+  menuEditImg: 'edit_menu_img',
 } as const;
 
 export const mainButtons: Record<string, InlineKeyboardButton> = {
@@ -80,6 +81,7 @@ export const connectionButtons: Record<string, ((connection: string) => Telegram
   offTable: (connection: string) => { return  { text: '❌  Отключить телеграм отчет', callback_data: CallbackData.offTable + connection } },
   offConnection: (connection: string) => { return  { text: '🛑 Удалить подключение', callback_data: CallbackData.offConnection + connection } },
   returnConnection: (connection: string) => { return  { text: '↩️ К подключению', callback_data: CallbackData.returnConnection + connection } },
+  menuEditImg: (connection: string) => { return  { text: '↩️ К подключению', callback_data: CallbackData.menuEditImg + connection } },
 }
 
 
@@ -89,6 +91,10 @@ export const connectionButtons: Record<string, ((connection: string) => Telegram
  */
 export const returnMenu = (edit: boolean = false) => {
   return new Options([[edit ? mainButtons.menuAndEdit : mainButtons.menu]]).reply_markup
+}
+
+export const returnMenuWithImg = (connection: string) => {
+  return new Options([[connectionButtons.menuEditImg(connection)]]).reply_markup
 }
 
 /**

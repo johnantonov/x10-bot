@@ -1,6 +1,6 @@
 import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 import { MessageMS, UserCallback } from "../dto/messages";
-import { CallbackData, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu, Options } from "../components/botButtons";
+import { CallbackData, generateReportTimeButtons, mainOptions, returnMenu,  yesNo, connectionOptions, generateConnectionsButtons, returnConnectionMenu, Options, returnMenuWithImg, connectionButtons } from "../components/botButtons";
 import { redis, rStates, ttls } from "../redis";
 import { connections_db } from "../../database/models/connections";
 import { handleStartMenu } from "../components/botAnswers";
@@ -50,7 +50,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
     case 'new user': 
       await RS.setUserState(chat_id, rStates.waitPremPass, ttls.usual)
-      editData = createEditData('🔑 Введите ваш пароль :)', returnBtn);
+      editData = createEditData('🔑 Введите код подключения :)', returnBtn);
       break;
 
     case 'my connection': 
@@ -66,7 +66,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
 
     case 'new connection': 
       await RS.setUserState(chat_id, rStates.waitNewConnection, ttls.usual)
-      editData = createEditData('🔑 Введите пароль от подключения', returnBtn);
+      editData = createEditData('🔑 Введите код подключения', returnBtn);
     break;
 
     case 'report now': 
@@ -82,7 +82,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       newButtonCallback = newConnectionData(data);
       editData = createEditData(
         `Настроить его можно в своей <a href="https://docs.google.com/spreadsheets/d/${data.ss}/edit">Системе 10X</a>, во вкладке <b>Отчёт Telegram</b>`, 
-        returnBtn,
+        returnMenuWithImg(newButtonCallback),
         images.editProducts
       );
     break;
@@ -143,7 +143,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
   }
 
   if (editData) {
-    await MS.editMessage(chat_id, message_id, editData?.text, editData?.options)
+    await MS.editMessage(chat_id, message_id, editData?.text, editData?.options, editData?.image)
   } 
 
   return bot.answerCallbackQuery(query.id);

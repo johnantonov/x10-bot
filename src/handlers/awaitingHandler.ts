@@ -4,6 +4,7 @@ import { redis, rStates } from "../redis";
 import { users_db } from "../../database/models/users";
 import dotenv from 'dotenv';
 import { connections_db } from "../../database/models/connections";
+import { getFormatReportTitle } from "../utils/string";
 dotenv.config();
 
 /**
@@ -36,7 +37,7 @@ export async function awaitingHandler(data: UserMsg, state: string) {
         return handleError(response.text);
       }
 
-      await connections_db.addConnection({ chat_id: data.chat_id, ss: data.text, title: '⚙️' + response.spreadsheet_name });
+      await connections_db.addConnection({ chat_id: data.chat_id, ss: data.text, title: '⚙️' + getFormatReportTitle(response.spreadsheet_name) });
 
       if (state === rStates.waitPremPass) {
         await users_db.updateType(data.chat_id, data.text);

@@ -11,4 +11,5 @@ export type CallbackAction =
   "get all reports" |
   "change time" |
   "change title" |
+  "img menu" |
   null;

@@ -58,6 +58,10 @@ export class CallbackProcessor {
       return "change title";
     }
 
+    if (this.isEditMenuWithImg()) {
+      return "img menu";
+    }
+
     return null; // error
   }
 
@@ -109,4 +113,7 @@ export class CallbackProcessor {
     return this.userCallbackData.startsWith(CallbackData.editConnectionTitle as string)
   }
 
+  private isEditMenuWithImg(): boolean {
+    return this.userCallbackData === CallbackData.menuEditImg
+  }
 }
