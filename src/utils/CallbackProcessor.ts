@@ -114,6 +114,6 @@ export class CallbackProcessor {
   }
 
   private isEditMenuWithImg(): boolean {
-    return this.userCallbackData === CallbackData.menuEditImg
+    return this.userCallbackData.startsWith(CallbackData.menuEditImg as string)
   }
 }
