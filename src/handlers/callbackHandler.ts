@@ -41,7 +41,6 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       await RediceService.deleteUserState(chat_id)
       const menu = await MS.getSpecialMsg(chat_id, 'menu');
       if (userCallbackData === CallbackData.menuAndEdit) {
-        console.log(menu)
         await handleStartMenu(userCallback, '/menu', false, menu.message_id)
       } else {
         await handleStartMenu(userCallback, '/menu', true)
@@ -125,6 +124,12 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       newButtonCallback = newConnectionData(data);;
       await RS.setUserState(chat_id, rStates.waitConnectionTitle+data.ss, ttls.usual)
       await MS.editMessage(chat_id, message_id, '✍️ Введите название подключения', returnConnectionMenu(newButtonCallback));
+    break;
+
+    case "img menu":
+      data = parseConnectionData(userCallbackData);
+      newButtonCallback = newConnectionData(data); 
+      editData = createEditData(' ', connectionOptions(newButtonCallback, data.sts));
     break;
 
     case 'change time': 
