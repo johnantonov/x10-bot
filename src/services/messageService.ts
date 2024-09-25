@@ -153,6 +153,7 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
     
     try {
       if (media) {
+        console.log(media)
         const imagePath = getPath(media);
         return editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!, newText, newReplyMarkup);
       }
