@@ -7,6 +7,7 @@ import { bot, MS } from "../bot";
 import { getPath } from "../utils/parse";
 import { user_type } from "../dto/user";
 import { images } from "../dto/images";
+import { formatError } from "../utils/string";
 
 /**
  * sends a help message to the user
@@ -62,7 +63,7 @@ export async function handleStartMenu(msg: UserMsg | UserCallback, command: '/me
       console.log('insert new user into db: ', chat_id, msg.username)
     }
   } catch (error) {
-    console.error('error while processing the /start command', error);
+    formatError(error, 'error while processing the /start command')
     return bot.sendMessage(msg.chat_id, 'Произошла ошибка. Попробуйте позже.');
   }
 }
@@ -89,7 +90,7 @@ export async function sendImageWithText(bot: TelegramBot, chat_id: number, image
     
     return bot.sendPhoto(chat_id, imagePath, { caption, ...options, parse_mode: 'HTML' });
   } catch (e) {
-    return console.error('error in sendImageWithText: ', e, chat_id, imageName, caption, keyboard)
+    return formatError(e, `error in sendImageWithText: ${e}, ${chat_id}, ${imageName}, ${caption}, ${keyboard}`)
   }
 };
 

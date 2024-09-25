@@ -129,7 +129,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
     case "img menu":
       data = parseConnectionData(userCallbackData);
       newButtonCallback = newConnectionData(data); 
-      editData = createEditData(' ', connectionOptions(newButtonCallback, data.sts));
+      editData = createEditData(' ', connectionOptions(newButtonCallback, data.sts), images.menu);
     break;
 
     case 'change time': 

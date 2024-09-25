@@ -47,7 +47,7 @@ export async function runPersonReport(chat_id: number, type: 'single' | 'all', s
       return response.data; 
     })
     .catch(error => {
-      console.error('Failed to initiate report: ', error);
+      formatError(error, 'Failed to initiate report: ')
       return null;  
     });
 }
@@ -78,7 +78,7 @@ export class ReportService {
       console.log(`Report Service: Message sent to chatId: ${chat_id}`);
       return res.data.result.message_id;
     } catch (error) {
-      console.error(`Report Service: Failed to send message to chatId: ${chat_id}`, error);
+      formatError(error, `Report Service: Failed to send message to chatId: ${chat_id}`)
     }
   }
 
@@ -89,7 +89,7 @@ export class ReportService {
       await axios.post(telegramApiUrl, { chat_id, photo, caption, parse_mode: 'HTML', reply_markup });
       console.log(`Report Service: Photo sent to chatId: ${chat_id}`);
     } catch (error) {
-      console.error(`Report Service: Failed to send photo to chatId: ${chat_id}`, error);
+      formatError(error, `Report Service: Failed to send photo to chatId: ${chat_id}`)
     }
   }
 
@@ -108,7 +108,7 @@ export class ReportService {
       const response = await axios.post(url!, { ssList, date: date });      
       return response.data;
     } catch (error) {
-      console.error('Error fetching reports from Web App:', error);
+      formatError(error, 'Error fetching reports from Web App:')
       throw error;
     }
   }
@@ -144,7 +144,7 @@ export class ReportService {
         console.log('No connections to report for this hour: '+currentHour);
       }
     } catch (error) {
-      console.error('Error in report service:', error);
+      formatError(error, 'Error in report service:')
     } 
   }
 
@@ -167,7 +167,7 @@ export class ReportService {
         }
       }
     } catch (error) {
-      console.error('Error running report for user:', error);
+      formatError(error, 'Error running report for user:')
     }
   }
 
@@ -192,7 +192,7 @@ import { Options, returnMenu } from '../components/botButtons';
 import { getYesterdayDate } from '../utils/dates';
 import { connections_db } from '../../database/models/connections';
 import { getFormatConnections } from '../utils/parse';
-import { getFormatReportTitle } from '../utils/string';
+import { formatError, getFormatReportTitle } from '../utils/string';
 
 export const reportService = new ReportService(pool);
 reportService.startCronJob();

@@ -5,6 +5,7 @@ import pool from "../../database/db"
 import { migrations } from "../helpers/wip-quick-fix-migration";
 import { users_db } from "../../database/models/users";
 import axios from "axios";
+import { formatError } from "../utils/string";
 
 dotenv.config();
 
@@ -77,7 +78,7 @@ export async function handleAdminCommand(chat_id: number, command: string, bot: 
       try {
         migrations[step].forEach(m => pool.query(m))
       } catch (e) {
-        console.error('error during migration process')
+        formatError(e, 'error during migration process')
       }
     }
 
@@ -91,11 +92,11 @@ export async function handleAdminCommand(chat_id: number, command: string, bot: 
         'Content-Type': 'application/json',
       },
     }).catch(error => {
-      console.error('Error sending all data: ', error);
+      formatError(error, 'Error sending all data: ')
     });
   }
     
   } catch (e) {
-    console.error('error in admin handler: '+e)
+    formatError(e, 'error in admin handler: ')
   }
 }

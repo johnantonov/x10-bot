@@ -4,7 +4,7 @@ import { redis, rStates } from "../redis";
 import { users_db } from "../../database/models/users";
 import dotenv from 'dotenv';
 import { connections_db } from "../../database/models/connections";
-import { getFormatReportTitle } from "../utils/string";
+import { formatError, getFormatReportTitle } from "../utils/string";
 dotenv.config();
 
 /**
@@ -60,7 +60,7 @@ export async function awaitingHandler(data: UserMsg, state: string) {
 
     return handleError("Возникла ошибка, попробуйте еще раз.");
   } catch (e) {
-    console.error('Error in awaiting handler: '+e)
+    formatError(e, 'Error in awaiting handler: ')
     return new AwaitingAnswer({ result: false, text: "Возникла ошибка, попробуйте еще раз." })
   }
 }

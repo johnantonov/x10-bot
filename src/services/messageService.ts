@@ -33,7 +33,7 @@ export class MessageService {
     try {
       await this.bot.deleteMessage(chat_id, message_id);
     } catch (error) {
-      console.error(`Error deleting msg ID ${message_id}:`, error);
+      formatError(error, `Error deleting msg ID ${message_id}:`)
     }
   }
 
@@ -46,7 +46,7 @@ export class MessageService {
       const message = { message_id, direction, content, special, timestamp: Date.now() };
       await this.client.rpush(messageKey, JSON.stringify(message));
     } catch (e) {
-      console.error('Message Service: error to saving message - ', e)
+      formatError(e, 'Message Service: error to saving message - ')
     }
   }
 
@@ -75,7 +75,7 @@ export class MessageService {
       try {
         await this.bot.deleteMessage(chat_id, msg.message_id);
       } catch (error) {
-        console.error(`Error during delete message ${msg.message_id}:`, error);
+        formatError(error, `Error during delete message ${msg.message_id}:`)
       }
     });
     await Promise.all(deletePromises);
@@ -122,13 +122,13 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
         }
         await this.bot.deleteMessage(chat_id, message.message_id);
       } catch (error) {
-        console.error(`Error during delete message ${message.message_id}:`, error);
+        formatError(error, `Error during delete message ${message.message_id}:`)
       }
     });
     await Promise.all(deletePromises);
     this.clearMessages(chat_id);
   } catch (error) {
-    console.error(`Error during delete all msgs from chat, user: ${chat_id} -`, error);
+    formatError(error, `Error during delete all msgs from chat, user: ${chat_id} -`)
   }
 }
 
@@ -187,6 +187,7 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
         await this.saveMessage({ chat_id: user.chat_id, message_id: message.message_id, special: 'menu' })
       }
 
+      
       const errorMessage = (error as any).response?.body?.description || (error as Error).message || 'Unknown error';
       console.error(`Error editing msg, ID: ${message_id} - ${errorMessage.substring(0, 200)}`);
     }
@@ -198,6 +199,7 @@ import FormData from 'form-data';
 import { mainOptions, Options } from '../components/botButtons';
 import { images } from '../dto/images';
 import { users_db } from '../../database/models/users';
+import { formatError } from '../utils/string';
 
 
 /**
