@@ -74,6 +74,7 @@ export async function callbackHandler(query: TelegramBot.CallbackQuery, bot: Tel
       newButtonCallback = newConnectionData(data) 
       await bot.editMessageReplyMarkup(connectionOptions(newButtonCallback, data.sts, true), { chat_id: chat_id, message_id })
       await runPersonReport(chat_id, 'single', data.ss)
+      await MS.deleteAllMessages(chat_id);
       await MS.deleteAllNewMessages(msgs, chat_id);
     break;
 
