@@ -235,7 +235,7 @@ export function generateReportTimeButtons(callback: string, page: number = 0): T
     times.push(navigationButtons);
   }
   */
-  times.push([mainButtons.menu])
+  times.push([mainButtons.menuAndEdit])
   return times;
 }
 
