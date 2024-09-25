@@ -155,7 +155,8 @@ async deleteAllMessages(chat_id: number, exclude?: string): Promise<void> {
       if (media) {
         console.log(media)
         const imagePath = getPath(media);
-        return editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!, newText, newReplyMarkup);
+        const res = await editMessageMedia(chat_id, message_id, imagePath, process.env.TELEGRAM_TOKEN!, newText, newReplyMarkup);
+        return console.log(res)
       }
 
       if (newText) {
