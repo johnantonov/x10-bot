@@ -34,6 +34,10 @@ export async function handleStartMenu(msg: UserMsg | UserCallback, command: '/me
     const user = users.rows[0];
     const chat_id = msg.chat_id
 
+    if (command === '/start' && isUser) {
+      command = '/menu'
+    }
+ 
     if (!chat_id) {
       return console.error('handleStartMenu: error to get chat id:', msg, command, isNewMsg, menuId)
     }
